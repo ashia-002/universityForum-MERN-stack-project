@@ -1,0 +1,63 @@
+const mongoose = require('mongoose');
+const bcrypt = require('bcrypt');
+
+const userSchema = new mongoose.Schema({
+  user_id: { type: String, required: true, unique: true },
+  name: { type: String, required: true },
+  email: { 
+    type: String, 
+    required: true, 
+    unique: true, 
+    validate: {
+      validator: (value) => value.endsWith('@rpsu.edu.bd'),
+      message: 'Only university emails (rpsu.edu.bd) are allowed.'
+    }
+  },
+  password: { type: String, required: true, minlength: 6 },
+
+  role: { type: String, enum: ['student', 'teacher'], required: true },
+  department_id: { type: mongoose.Schema.Types.ObjectId, ref: 'Department' },
+
+  //Communities the user has joined
+  communities_joined: [
+    { type: mongoose.Schema.Types.ObjectId, ref: 'Community' }
+  ],
+
+  //Communities the user has created (they are admin of)
+  communities_created: [
+    { type: mongoose.Schema.Types.ObjectId, ref: 'Community' }
+  ],
+
+  //Events the user marked as interested
+  events_interested: [
+    { type: mongoose.Schema.Types.ObjectId, ref: 'Post' } // only posts of type 'event'
+  ],
+
+  //Announcements bookmarked by the user
+  announcements_bookmarked: [
+    { type: mongoose.Schema.Types.ObjectId, ref: 'Post' } // only posts of type 'announcement'
+  ]
+
+}, { timestamps: true });
+
+/**
+ * Enforce limits:
+ * - user can create at most 3 communities
+ */
+userSchema.pre('save', function(next) {
+  if (this.communities_created && this.communities_created.length > 3) {
+    return next(new Error('User cannot create more than 3 communities.'));
+  }
+  next();
+});
+
+/**
+ * Automatically hash password before saving
+ */
+userSchema.pre('save', async function(next) {
+  if (!this.isModified('password')) return next();
+  this.password = await bcrypt.hash(this.password, 10);
+  next();
+});
+
+module.exports = mongoose.model('User', userSchema);
