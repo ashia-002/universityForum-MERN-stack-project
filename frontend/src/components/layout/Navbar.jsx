@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import logo from '../../assets/logo.png'; // Most likely correct
 
 const Navbar = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -32,34 +33,52 @@ const Navbar = () => {
     <>
       {/* Top Header Bar - Fixed at top */}
       <div className="fixed top-0 left-0 right-0 h-[118px] bg-white border-b border-gray-200 z-50 flex items-center justify-between px-8">
-        {/* Logo Section */}
+        {/* Logo Section - Updated with actual logo */}
         <div className="flex items-center gap-3">
-          <div className="w-12 h-12 bg-[#533DDE] rounded-lg flex items-center justify-center">
-            <span className="text-white font-bold text-lg">DD</span>
-          </div>
+          <img 
+            src={logo} 
+            alt="Data Drop Logo" 
+            className="w-12 h-12 object-contain"
+          />
           <div className="flex flex-col">
             <h1 className="text-[#180F57] font-bold text-2xl tracking-wide">DATA DROP</h1>
             <p className="text-[#666666] text-lg">RPSU Forum</p>
           </div>
         </div>
 
-        {/* Search Bar */}
+        {/* Search Bar - Updated to match Figma design */}
         <div className="flex-1 max-w-2xl mx-8">
           <div className="relative">
             <input
               type="text"
               placeholder="Type to search"
-              className="w-full bg-[#F2F2F2] rounded-xl py-3 px-6 pl-12 focus:outline-none focus:ring-2 focus:ring-[#533DDE] text-lg border-0"
+              className="w-full bg-white rounded-xl py-3 px-6 pl-12 focus:outline-none focus:ring-2 focus:ring-[#533DDE] text-lg border border-[#E5E5E5] focus:border-[#533DDE] transition-colors"
             />
-            <span className="absolute left-4 top-1/2 transform -translate-y-1/2 text-[#999999] text-lg">
+            <span className="absolute left-4 top-1/2 transform -translate-y-1/2 text-[#533DDE] text-lg">
               🔍
             </span>
           </div>
         </div>
 
-        {/* User Profile */}
-        <div className="flex items-center gap-4">
-          <button className="w-10 h-10 bg-[#ECE9FB] rounded-full flex items-center justify-center hover:bg-[#E0DCF9] transition-colors">
+        {/* Right Side Buttons - Updated with purple outline */}
+        <div className="flex items-center gap-3">
+          {/* Notification Button */}
+          <button className="w-10 h-10 bg-white rounded-full flex items-center justify-center hover:bg-[#FAF9FF] transition-colors border border-[#533DDE] shadow-sm">
+            <span className="text-[#533DDE] text-lg">🔔</span>
+          </button>
+
+          {/* Messages Button */}
+          <button className="w-10 h-10 bg-white rounded-full flex items-center justify-center hover:bg-[#FAF9FF] transition-colors border border-[#533DDE] shadow-sm">
+            <span className="text-[#533DDE] text-lg">💬</span>
+          </button>
+
+          {/* Add Post Button */}
+          <button className="w-10 h-10 bg-white rounded-full flex items-center justify-center hover:bg-[#FAF9FF] transition-colors border border-[#533DDE] shadow-sm">
+            <span className="text-[#533DDE] text-lg">➕</span>
+          </button>
+
+          {/* User Profile Button */}
+          <button className="w-10 h-10 bg-white rounded-full flex items-center justify-center hover:bg-[#FAF9FF] transition-colors border border-[#533DDE] shadow-sm">
             <span className="text-[#533DDE] text-lg">👤</span>
           </button>
         </div>
