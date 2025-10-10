@@ -137,15 +137,16 @@ const Navbar = () => {
           </div>
 
           {/* Logout Button */}
-          <div className="mt-auto pt-4 border-t border-gray-200">
-            <button
-              onClick={handleLogout}
-              className="w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-left text-red-600 hover:bg-red-50 transition-colors"
-            >
-              <span className="text-xl">🚪</span>
-              <span className="text-base">Logout</span>
-            </button>
-          </div>
+         
+<div className="pt-4 border-t border-gray-200">
+  <button
+    onClick={handleLogout}
+    className="w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-left text-[#533DDE] bg-transparent hover:!bg-[#ECE9FB] hover:!text-[#533DDE] transition-colors duration-200"
+  >
+    <span className="text-xl">🚪</span>
+    <span className="text-base font-medium">Logout</span>
+  </button>
+</div>
         </div>
       </div>
 
@@ -228,15 +229,15 @@ const Navbar = () => {
               </div>
 
               {/* Logout Button */}
-              <div className="pt-4 border-t border-gray-200">
-                <button
-                  onClick={handleLogout}
-                  className="w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-left text-red-600 hover:bg-red-50"
-                >
-                  <span className="text-xl">🚪</span>
-                  <span className="text-base">Logout</span>
-                </button>
-              </div>
+             <div className="pt-4 border-t border-gray-200">
+  <button
+    onClick={handleLogout}
+    className="w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-left text-[#180F57] font-bold hover:bg-[#ECE9FB] transition-colors duration-200"
+  >
+    <span className="text-xl">🚪</span>
+    <span className="text-base">Logout</span>
+  </button>
+</div>
             </div>
           </div>
         </div>
