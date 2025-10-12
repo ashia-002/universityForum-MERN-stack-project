@@ -1,3 +1,4 @@
+// src/components/Login.jsx
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import logo from "../assets/logo.png";
@@ -8,6 +9,7 @@ const Login = () => {
     password: ''
   });
 
+  const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
 
   const handleChange = (e) => {
@@ -65,7 +67,7 @@ const Login = () => {
         Admin?
       </button>
 
-      {/* Group 8 - Center Background Icon */}
+      {/* Center Background Logo */}
       <div className="absolute w-[251px] h-[251px] left-[248px] top-[415px]">
         <img 
           src={logo} 
@@ -78,14 +80,12 @@ const Login = () => {
       <div className="flex justify-center items-center min-h-screen">
         <div className="w-full max-w-[855px] bg-white rounded-xl shadow-[0px_6px_18px_rgba(100,81,225,0.16)] p-12 ml-64">
           <div className="flex flex-col gap-8 w-full">
-            {/* Header */}
             <h2 className="text-4xl font-bold text-center text-[#333333] tracking-wide mb-4">
               Login
             </h2>
 
-            {/* Form */}
             <form onSubmit={handleSubmit} className="flex flex-col gap-6">
-              {/* User Mail Field */}
+              {/* Email Field */}
               <div className="w-full h-14 bg-[#F2F2F2] rounded-lg px-4 flex items-center">
                 <input
                   type="email"
@@ -98,10 +98,10 @@ const Login = () => {
                 />
               </div>
 
-              {/* Password Field */}
-              <div className="w-full h-14 bg-[#F2F2F2] rounded-lg px-4 flex items-center">
+              {/* Password Field with Show/Hide */}
+              <div className="w-full h-14 bg-[#F2F2F2] rounded-lg px-4 flex items-center justify-between">
                 <input
-                  type="password"
+                  type={showPassword ? "text" : "password"}
                   name="password"
                   placeholder="Password"
                   className="w-full bg-transparent outline-none text-[#333333] font-medium text-lg placeholder-[#999999]"
@@ -109,9 +109,16 @@ const Login = () => {
                   onChange={handleChange}
                   required
                 />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="ml-2 text-sm text-[#533DDE] font-medium"
+                >
+                  {showPassword ? "Hide" : "Show"}
+                </button>
               </div>
 
-              {/* Forget Password */}
+              {/* Forgot Password */}
               <div className="flex justify-end">
                 <button
                   type="button"
@@ -124,7 +131,6 @@ const Login = () => {
 
               {/* Action Buttons */}
               <div className="flex justify-between items-center pt-6">
-                {/* Don't have account */}
                 <button
                   type="button"
                   onClick={handleSignUpRedirect}
@@ -133,12 +139,11 @@ const Login = () => {
                   Don't have an account ?
                 </button>
                 
-                {/* Sign In Button */}
                 <button
                   type="submit"
                   className="px-8 py-4 bg-[#533DDE] rounded-lg text-white font-medium text-lg hover:bg-[#311EAE] transition-colors min-w-[120px]"
                 >
-                  Sign in
+                  Log in
                 </button>
               </div>
             </form>
