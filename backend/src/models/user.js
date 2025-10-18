@@ -28,15 +28,21 @@ const userSchema = new mongoose.Schema({
     { type: mongoose.Schema.Types.ObjectId, ref: 'Community' }
   ],
 
-  //Events the user marked as interested
-  events_interested: [
-    { type: mongoose.Schema.Types.ObjectId, ref: 'Post' } // only posts of type 'event'
-  ],
+  /// Posts the user has liked or commented on (type: 'normal')
+posts_interacted: [
+  { type: mongoose.Schema.Types.ObjectId, ref: 'Post' }
+],
 
-  //Announcements bookmarked by the user
-  announcements_bookmarked: [
-    { type: mongoose.Schema.Types.ObjectId, ref: 'Post' } // only posts of type 'announcement'
-  ]
+// Events the user marked as interested (type: 'event')
+events_interested: [
+  { type: mongoose.Schema.Types.ObjectId, ref: 'Event' }
+],
+
+// Announcements bookmarked by the user (type: 'announcement')
+announcements_bookmarked: [
+  { type: mongoose.Schema.Types.ObjectId, ref: 'Announcement' }
+],
+
 
 }, { timestamps: true });
 
