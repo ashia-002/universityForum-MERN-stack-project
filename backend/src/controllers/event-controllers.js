@@ -3,12 +3,12 @@ const Event = require('../models/posts/event');
 // Create Event
 exports.createEvent = async (req, res) => {
   try {
-    const { title, content, scope, community_id, department_id, date, time, venue, image } = req.body;
+    const { title, description, scope, community_id, department_id, date, time, venue, image } = req.body;
     const created_by = req.user.id;
 
     const newEvent = await Event.create({
       title,
-      content,
+      description,
       scope,
       community_id: community_id || null,
       department_id: department_id || null,
