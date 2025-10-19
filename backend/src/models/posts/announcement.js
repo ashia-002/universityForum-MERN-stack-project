@@ -9,7 +9,7 @@ const announcementSchema = new mongoose.Schema({
   priority: {
     type: String,
     enum: ['high', 'medium', 'low'],
-    default: 'normal'
+    default: 'medium'
   },
   bookmarks: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }]
 });
