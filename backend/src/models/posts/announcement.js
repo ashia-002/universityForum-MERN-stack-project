@@ -6,6 +6,11 @@ const sharedFields = require('./sharedFields');
 const announcementSchema = new mongoose.Schema({
   ...sharedFields,
 
+  priority: {
+    type: String,
+    enum: ['high', 'medium', 'low'],
+    default: 'medium'
+  },
   bookmarks: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }]
 });
 

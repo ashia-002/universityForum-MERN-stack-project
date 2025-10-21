@@ -6,6 +6,10 @@ const sharedFields = require('./sharedFields');
 const eventSchema = new mongoose.Schema({
   ...sharedFields,
 
+  venue: { type: String, required: true },
+  date: { type: Date, required: true },
+  time: { type: String, required: true },
+
   interested: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
 
   comments: [
