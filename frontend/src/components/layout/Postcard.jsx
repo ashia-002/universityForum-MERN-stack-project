@@ -12,7 +12,7 @@ const Postcard = ({
   showCommentButton = true,
 }) => {
   const [commentText, setCommentText] = useState("");
-  const [comments, setComments] = useState([]); 
+  const [comments, setComments] = useState([]);
   const [loadingComment, setLoadingComment] = useState(false);
   const [loadingLike, setLoadingLike] = useState(false);
   const [loadingBookmark, setLoadingBookmark] = useState(false);
@@ -45,7 +45,7 @@ const Postcard = ({
   const handleLikePost = async () => {
     try {
       setLoadingLike(true);
-      await api.post(`/post/${id}/like`, { text: "" }); 
+      await api.post(`/post/${id}/like`);
       alert("You liked this post!");
     } catch (error) {
       console.error("Error liking post:", error);
@@ -58,7 +58,7 @@ const Postcard = ({
   const handleBookmarkPost = async () => {
     try {
       setLoadingBookmark(true);
-      await api.post(`/post/${id}/bookmark`, { text: "" }); 
+      await api.post(`/post/${id}/bookmark`);
       alert("Post bookmarked!");
     } catch (error) {
       console.error("Error bookmarking post:", error);
@@ -105,8 +105,8 @@ const Postcard = ({
       {/* Divider + Action Buttons */}
       {showCommentButton && (
         <div className="border-t border-[#ECE9FB] pt-5 flex items-center gap-3">
-          
-          {/* Purple Love Button */}
+
+          {/* Like Button */}
           <button
             onClick={handleLikePost}
             disabled={loadingLike}
@@ -128,7 +128,7 @@ const Postcard = ({
             </svg>
           </button>
 
-          {/* Purple Bookmark Button */}
+          {/* Bookmark Button */}
           <button
             onClick={handleBookmarkPost}
             disabled={loadingBookmark}
@@ -145,7 +145,7 @@ const Postcard = ({
             </svg>
           </button>
 
-          {/* Add Comment Input Field */}
+          {/* Comment Input */}
           <input
             type="text"
             placeholder="Add a comment..."
@@ -156,7 +156,6 @@ const Postcard = ({
             disabled={loadingComment}
           />
 
-          {/* Send Button */}
           <button
             onClick={handleAddComment}
             disabled={loadingComment || !commentText.trim()}
@@ -171,7 +170,7 @@ const Postcard = ({
       {comments.length > 0 && (
         <div className="mt-4 space-y-2">
           {comments.map((c) => (
-            <div key={c._id} className="text-sm text-[#333] border-b border-[#ECE9FB] pb-2">
+            <div key={c._id || c.id || Math.random()} className="text-sm text-[#333] border-b border-[#ECE9FB] pb-2">
               <span className="font-medium">{c.user}: </span>
               <span>{c.text}</span>
             </div>

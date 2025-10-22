@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import CreatePost from './CreatePost';
-import Postcard from './Postcard'
+import Postcard from './Postcard'; // make sure file is exactly 'Postcard.jsx'
 
 const Dashboard = () => {
   const [showCreatePost, setShowCreatePost] = useState(false);
@@ -31,7 +31,6 @@ const Dashboard = () => {
 
           {/* Buttons below Add a New Post */}
           <div className="flex gap-4 items-center">
-            {/* Department Dropdown (Figma Style) */}
             <div className="relative w-44">
               <select
                 className="appearance-none w-full h-14 bg-white border border-[#ECE9FB] rounded-xl pl-4 pr-10 outline-none text-[#666666] text-sm font-normal focus:ring-2 focus:ring-[#533DDE] focus:border-transparent cursor-pointer"
@@ -44,7 +43,6 @@ const Dashboard = () => {
                 <option value="bba">BBA</option>
                 <option value="ece">ECE</option>
               </select>
-              {/* Custom Down Arrow */}
               <svg
                 className="absolute right-4 top-1/2 transform -translate-y-1/2 w-4 h-4 text-[#533DDE] pointer-events-none"
                 fill="none"
@@ -60,7 +58,6 @@ const Dashboard = () => {
               </svg>
             </div>
 
-            {/* Recent Button */}
             <button
               onClick={() => setActiveButton('Recent')}
               className={`w-32 h-14 rounded-xl font-medium transition-colors ${
@@ -72,7 +69,6 @@ const Dashboard = () => {
               Recent
             </button>
 
-            {/* Top Button */}
             <button
               onClick={() => setActiveButton('Top')}
               className={`w-32 h-14 rounded-xl font-medium transition-colors ${
