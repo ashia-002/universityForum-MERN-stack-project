@@ -18,7 +18,7 @@ const PORT = process.env.PORT || 4000;
 //cross platform manage
 app.use(
     cors({
-        origin: "https://datadrop-six.vercel.app",
+        origin: "rpsuforum.vercel.app",
         methods: ["GET", "POST", "DELETE", "PUT"],
         allowedHeaders: ["Content-Type", "Authorization"],
         credentials: true
