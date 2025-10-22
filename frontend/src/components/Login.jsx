@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import logo from "../assets/logo.png";
+import api from "../services/api"; // ✅ Import backend connection
 
 const Login = () => {
   const [formData, setFormData] = useState({
@@ -10,6 +11,8 @@ const Login = () => {
   });
 
   const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
   const navigate = useNavigate();
 
   const handleChange = (e) => {
@@ -19,12 +22,29 @@ const Login = () => {
     });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log('Login submitted:', formData);
-    
-    // Redirect to dashboard after successful login
-    navigate('/dashboard');
+    setError('');
+    setLoading(true);
+
+    try {
+      // 🔹 Send login request to backend
+      const response = await api.post("/auth/login", formData);
+
+      // 🔹 If success, store token and user info
+      localStorage.setItem("token", response.data.token);
+      localStorage.setItem("user", JSON.stringify(response.data.user));
+
+      console.log("✅ Login successful:", response.data);
+
+      // 🔹 Redirect to dashboard
+      navigate("/dashboard");
+    } catch (err) {
+      console.error("❌ Login failed:", err.response?.data || err.message);
+      setError(err.response?.data?.message || "Invalid email or password");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleSignUpRedirect = () => {
@@ -36,7 +56,6 @@ const Login = () => {
   };
 
   const handleForgotPassword = () => {
-    console.log('Forgot password clicked');
     alert('Forgot password functionality coming soon!');
   };
 
@@ -48,11 +67,7 @@ const Login = () => {
       
       {/* Logo Section - Top Left */}
       <div className="absolute left-16 top-12 flex items-center gap-3">
-        <img 
-          src={logo} 
-          alt="Data Drop Logo" 
-          className="w-14 h-14 object-contain rounded-lg"
-        />
+        <img src={logo} alt="Data Drop Logo" className="w-14 h-14 object-contain rounded-lg" />
         <div className="flex flex-col">
           <h1 className="text-[#180F57] font-semibold text-xl tracking-wide">DATA DROP</h1>
           <p className="text-[#666666] text-lg">RPSU Forum</p>
@@ -69,11 +84,7 @@ const Login = () => {
 
       {/* Center Background Logo */}
       <div className="absolute w-[251px] h-[251px] left-[248px] top-[415px]">
-        <img 
-          src={logo} 
-          alt="Data Drop Background Logo" 
-          className="w-[235px] h-[235px] rounded-[44px] shadow-[0px_6px_30px_rgba(41,35,92,0.25)]"
-        />
+        <img src={logo} alt="Data Drop Background Logo" className="w-[235px] h-[235px] rounded-[44px] shadow-[0px_6px_30px_rgba(41,35,92,0.25)]" />
       </div>
 
       {/* Main Login Card */}
@@ -118,6 +129,13 @@ const Login = () => {
                 </button>
               </div>
 
+              {/* Error Message */}
+              {error && (
+                <p className="text-red-500 text-center text-base font-medium">
+                  {error}
+                </p>
+              )}
+
               {/* Forgot Password */}
               <div className="flex justify-end">
                 <button
@@ -141,9 +159,12 @@ const Login = () => {
                 
                 <button
                   type="submit"
-                  className="px-8 py-4 bg-[#533DDE] rounded-lg text-white font-medium text-lg hover:bg-[#311EAE] transition-colors min-w-[120px]"
+                  disabled={loading}
+                  className={`px-8 py-4 rounded-lg text-white font-medium text-lg transition-colors min-w-[120px] ${
+                    loading ? "bg-[#867AE9] cursor-not-allowed" : "bg-[#533DDE] hover:bg-[#311EAE]"
+                  }`}
                 >
-                  Log in
+                  {loading ? "Logging in..." : "Log in"}
                 </button>
               </div>
             </form>

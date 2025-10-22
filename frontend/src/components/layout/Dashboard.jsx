@@ -1,152 +1,143 @@
-import React from 'react';
+import React, { useState } from 'react';
+import CreatePost from './CreatePost';
+import PostCard from './PostCard';
 
 const Dashboard = () => {
+  const [showCreatePost, setShowCreatePost] = useState(false);
+  const [activeButton, setActiveButton] = useState('Recent'); // default active
+
   return (
-    <div className="min-h-screen bg-[#FAF9FF] ml-0 lg:ml-[310px] mt-[118px] p-6">
-      <div className="max-w-7xl mx-auto">
-        {/* Welcome Section */}
-        <div className="mb-8">
-          <h1 className="text-4xl font-bold text-[#180F57] mb-3">Welcome to DATA DROP</h1>
-          <p className="text-xl text-[#666666]">University Forum - Connect, Share, and Engage with your campus community</p>
-        </div>
-
-        {/* Quick Stats Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <div className="bg-white rounded-2xl p-6 shadow-[0px_4px_12px_rgba(0,0,0,0.1)] border border-gray-100">
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="text-lg font-semibold text-[#333333] mb-2">Active Communities</h3>
-                <p className="text-3xl font-bold text-[#533DDE]">24</p>
-              </div>
-              <div className="w-12 h-12 bg-[#ECE9FB] rounded-lg flex items-center justify-center">
-                <span className="text-2xl text-[#533DDE]">👥</span>
-              </div>
-            </div>
-          </div>
+    <div className="min-h-screen bg-[#FAF9FF] font-poppins">
+      
+      {/* Main Content Area with blur when modal is open */}
+      <div
+        className={`ml-80 pt-32 px-8 flex gap-8 transition-all duration-300 ${
+          showCreatePost ? 'blur-sm pointer-events-none select-none' : ''
+        }`}
+      >
+        {/* Left/Main Column */}
+        <div className="flex-1 flex flex-col gap-4">
           
-          <div className="bg-white rounded-2xl p-6 shadow-[0px_4px_12px_rgba(0,0,0,0.1)] border border-gray-100">
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="text-lg font-semibold text-[#333333] mb-2">Upcoming Events</h3>
-                <p className="text-3xl font-bold text-[#533DDE]">12</p>
-              </div>
-              <div className="w-12 h-12 bg-[#ECE9FB] rounded-lg flex items-center justify-center">
-                <span className="text-2xl text-[#533DDE]">📅</span>
-              </div>
-            </div>
-          </div>
-          
-          <div className="bg-white rounded-2xl p-6 shadow-[0px_4px_12px_rgba(0,0,0,0.1)] border border-gray-100">
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="text-lg font-semibold text-[#333333] mb-2">New Posts</h3>
-                <p className="text-3xl font-bold text-[#533DDE]">156</p>
-              </div>
-              <div className="w-12 h-12 bg-[#ECE9FB] rounded-lg flex items-center justify-center">
-                <span className="text-2xl text-[#533DDE]">💬</span>
-              </div>
-            </div>
+          {/* Add a New Post Section */}
+          <div className="flex justify-between items-center bg-white rounded-2xl p-6 shadow-[0px_4px_20px_rgba(100,81,225,0.15)]">
+            <h1 className="text-xl font-semibold text-[#333333]">Add a new post</h1>
+            <button
+              onClick={() => setShowCreatePost(true)}
+              className="w-12 h-12 bg-[#533DDE] text-white rounded-xl font-medium hover:bg-[#311EAE] transition-colors flex items-center justify-center text-2xl"
+            >
+              +
+            </button>
           </div>
 
-          <div className="bg-white rounded-2xl p-6 shadow-[0px_4px_12px_rgba(0,0,0,0.1)] border border-gray-100">
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="text-lg font-semibold text-[#333333] mb-2">Online Users</h3>
-                <p className="text-3xl font-bold text-[#533DDE]">89</p>
-              </div>
-              <div className="w-12 h-12 bg-[#ECE9FB] rounded-lg flex items-center justify-center">
-                <span className="text-2xl text-[#533DDE]">🟢</span>
-              </div>
+          {/* Buttons below Add a New Post */}
+          <div className="flex gap-4 items-center">
+            {/* Department Dropdown (Figma Style) */}
+            <div className="relative w-44">
+              <select
+                className="appearance-none w-full h-14 bg-white border border-[#ECE9FB] rounded-xl pl-4 pr-10 outline-none text-[#666666] text-sm font-normal focus:ring-2 focus:ring-[#533DDE] focus:border-transparent cursor-pointer"
+                defaultValue=""
+              >
+                <option value="" disabled>
+                  Department
+                </option>
+                <option value="cse">CSE</option>
+                <option value="bba">BBA</option>
+                <option value="ece">ECE</option>
+              </select>
+              {/* Custom Down Arrow */}
+              <svg
+                className="absolute right-4 top-1/2 transform -translate-y-1/2 w-4 h-4 text-[#533DDE] pointer-events-none"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+                strokeWidth={2}
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M19 9l-7 7-7-7"
+                />
+              </svg>
             </div>
+
+            {/* Recent Button */}
+            <button
+              onClick={() => setActiveButton('Recent')}
+              className={`w-32 h-14 rounded-xl font-medium transition-colors ${
+                activeButton === 'Recent'
+                  ? 'bg-[#533DDE] text-white'
+                  : 'bg-[#F8F9FF] text-[#533DDE] hover:bg-[#ECE9FB]'
+              }`}
+            >
+              Recent
+            </button>
+
+            {/* Top Button */}
+            <button
+              onClick={() => setActiveButton('Top')}
+              className={`w-32 h-14 rounded-xl font-medium transition-colors ${
+                activeButton === 'Top'
+                  ? 'bg-[#533DDE] text-white'
+                  : 'bg-[#F8F9FF] text-[#533DDE] hover:bg-[#ECE9FB]'
+              }`}
+            >
+              Top
+            </button>
           </div>
-        </div>
 
-        {/* Main Content Area */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Left Column - 2/3 width */}
-          <div className="lg:col-span-2 space-y-6">
-            {/* Welcome Card */}
-            <div className="bg-white rounded-2xl p-8 shadow-[0px_4px_12px_rgba(0,0,0,0.1)] border border-gray-100">
-              <h2 className="text-2xl font-bold text-[#180F57] mb-4">Dashboard Overview</h2>
-              <p className="text-[#666666] leading-relaxed text-lg mb-6">
-                Welcome to your university forum dashboard. This is your central hub for connecting with 
-                students, faculty, and various communities across the campus.
-              </p>
-              
-              <div className="bg-[#FAF9FF] rounded-xl p-6 border border-[#ECE9FB]">
-                <h3 className="text-lg font-semibold text-[#533DDE] mb-3">Quick Actions</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <button className="flex items-center space-x-3 p-4 rounded-lg bg-white border border-gray-200 hover:border-[#533DDE] transition-colors">
-                    <span className="text-2xl">📝</span>
-                    <span className="text-left">
-                      <div className="font-semibold text-[#333333]">Create Post</div>
-                      <div className="text-sm text-[#666666]">Share your thoughts</div>
-                    </span>
-                  </button>
-                  <button className="flex items-center space-x-3 p-4 rounded-lg bg-white border border-gray-200 hover:border-[#533DDE] transition-colors">
-                    <span className="text-2xl">🔍</span>
-                    <span className="text-left">
-                      <div className="font-semibold text-[#333333]">Explore</div>
-                      <div className="text-sm text-[#666666]">Find communities</div>
-                    </span>
-                  </button>
-                </div>
-              </div>
-            </div>
+          {/* Post Cards Section */}
+          <div className="flex flex-col gap-4">
+            <PostCard
+              title="Date of the final exams"
+              author="Dr Ronald Jackson"
+              timeAgo="3d ago"
+              role="Teacher"
+              tags={['Post', 'Department', 'CSE']}
+              content="Hand rib pepperoni thin and rib steak ranch. Pork banana rib cheese sautéed olives buffalo deep pork bell. And marinara cheese melted red mozzarella crust ham cheese olives. Aussie ham ipsum pie wing. Deep marinara mayo broccoli meatball burnt marinara. Fresh pineapple olives Hawaiian onions ricotta meat party green."
+            />
 
-            {/* Recent Activity Placeholder */}
-            <div className="bg-white rounded-2xl p-8 shadow-[0px_4px_12px_rgba(0,0,0,0.1)] border border-gray-100">
-              <h2 className="text-2xl font-bold text-[#180F57] mb-6">Recent Activity</h2>
-              <div className="text-center py-12">
-                <div className="text-6xl mb-4">📊</div>
-                <p className="text-[#666666] text-lg mb-2">Your activity feed is empty</p>
-                <p className="text-[#999999]">Start engaging with communities to see activity here</p>
-              </div>
-            </div>
-          </div>
+            <PostCard
+              title="Photography Contest"
+              author="Dr Ronald Jackson"
+              timeAgo="3d ago"
+              role="Student • Admin"
+              tags={['Post', 'Community', 'CSE_Photography']}
+              content="Join our annual photography contest showcasing the best campus moments. Submit your entries by Friday for a chance to win exciting prizes and get featured in the university magazine."
+            />
 
-          {/* Right Column - 1/3 width */}
-          <div className="space-y-6">
-            {/* Quick Links */}
-            <div className="bg-white rounded-2xl p-6 shadow-[0px_4px_12px_rgba(0,0,0,0.1)] border border-gray-100">
-              <h3 className="text-lg font-bold text-[#180F57] mb-4">Quick Links</h3>
-              <div className="space-y-3">
-                <button className="w-full flex items-center space-x-3 p-3 rounded-lg hover:bg-[#FAF9FF] transition-colors text-left">
-                  <span className="text-xl">📚</span>
-                  <span className="font-medium text-[#333333]">Academic Resources</span>
-                </button>
-                <button className="w-full flex items-center space-x-3 p-3 rounded-lg hover:bg-[#FAF9FF] transition-colors text-left">
-                  <span className="text-xl">🏛️</span>
-                  <span className="font-medium text-[#333333]">University Events</span>
-                </button>
-                <button className="w-full flex items-center space-x-3 p-3 rounded-lg hover:bg-[#FAF9FF] transition-colors text-left">
-                  <span className="text-xl">💼</span>
-                  <span className="font-medium text-[#333333]">Career Services</span>
-                </button>
-                <button className="w-full flex items-center space-x-3 p-3 rounded-lg hover:bg-[#FAF9FF] transition-colors text-left">
-                  <span className="text-xl">🆘</span>
-                  <span className="font-medium text-[#333333]">Student Support</span>
-                </button>
-              </div>
-            </div>
+            <PostCard
+              title="Campus Library Hours Extended"
+              author="University Administration"
+              timeAgo="1d ago"
+              role="Admin"
+              tags={['Announcement', 'University', 'Library']}
+              content="The main campus library will now remain open until 11 PM during weekdays to accommodate students' study needs during finals week. Additional study spaces have been arranged in the east wing."
+            />
 
-            {/* Announcements */}
-            <div className="bg-white rounded-2xl p-6 shadow-[0px_4px_12px_rgba(0,0,0,0.1)] border border-gray-100">
-              <h3 className="text-lg font-bold text-[#180F57] mb-4">Announcements</h3>
-              <div className="space-y-4">
-                <div className="p-3 bg-[#FAF9FF] rounded-lg border border-[#ECE9FB]">
-                  <div className="font-semibold text-[#333333] mb-1">Spring Semester Starts</div>
-                  <div className="text-sm text-[#666666]">January 15, 2024</div>
-                </div>
-                <div className="p-3 bg-[#FAF9FF] rounded-lg border border-[#ECE9FB]">
-                  <div className="font-semibold text-[#333333] mb-1">Library Extended Hours</div>
-                  <div className="text-sm text-[#666666]">Effective immediately</div>
-                </div>
-              </div>
-            </div>
+            <PostCard
+              title="Programming Workshop Series"
+              author="Prof. Sarah Wilson"
+              timeAgo="2d ago"
+              role="Faculty"
+              tags={['Event', 'Workshop', 'CSE']}
+              content="Join our weekly programming workshops covering advanced topics in web development, machine learning, and data structures. Perfect for students looking to enhance their coding skills and prepare for technical interviews."
+              showCommentButton={true}
+            />
           </div>
         </div>
+
+        {/* Right Column (empty for future sidebar) */}
+        <div className="w-80 flex-shrink-0">{/* Reserved for future sidebar */}</div>
       </div>
+
+      {/* Create Post Modal */}
+      {showCreatePost && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl w-full max-w-6xl">
+            <CreatePost onClose={() => setShowCreatePost(false)} />
+          </div>
+        </div>
+      )}
     </div>
   );
 };
