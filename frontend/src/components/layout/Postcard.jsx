@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import api from "../../services/api.js";
 
-const PostCard = ({
+const Postcard = ({
   id, // post ID needed for comments, likes, bookmarks
   title = "Date of the final exams",
   author = "Dr. Ronald Jackson",
