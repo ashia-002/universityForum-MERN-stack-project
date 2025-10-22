@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import CreatePost from './CreatePost';
-import PostCard from './Postcard'
+import Postcard from './Postcard'
 
 const Dashboard = () => {
   const [showCreatePost, setShowCreatePost] = useState(false);
