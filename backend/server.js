@@ -16,14 +16,32 @@ const app = express();
 const PORT = process.env.PORT || 4000;
 
 //cross platform manage
-app.use(
-    cors({
-        origin: "rpsuforum.vercel.app",
-        methods: ["GET", "POST", "DELETE", "PUT"],
-        allowedHeaders: ["Content-Type", "Authorization"],
-        credentials: true
-    })
-);
+// app.use(
+//     cors({
+//         origin: ["rpsuforum.vercel.app", "http://localhost:5173/"],
+//         methods: ["GET", "POST", "DELETE", "PUT"],
+//         allowedHeaders: ["Content-Type", "Authorization"],
+//         credentials: true
+//     })
+// );
+// CORS configuration - allowing multiple origins
+const allowedOrigins = [
+    "rpsuforum.vercel.app", // Development frontend
+    "http://localhost:5173/", // Production frontend URL
+];
+
+app.use(cors({
+    origin: function (origin, callback) {
+        if (!origin || allowedOrigins.indexOf(origin) !== -1) {
+            callback(null, true); // Allow the request
+        } else {
+            callback(new Error('Not allowed by CORS')); // Reject the request
+        }
+    },
+    methods: ["GET", "POST", "DELETE", "PUT"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+    credentials: true, // Allow cookies and headers
+}));
 
 // Middleware
 app.use(express.json());
