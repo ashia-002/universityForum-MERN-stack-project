@@ -87,7 +87,7 @@ const Dashboard = () => {
 
           {/* Post Cards Section */}
           <div className="flex flex-col gap-4">
-            <PostCard
+            <Postcard
               title="Date of the final exams"
               author="Dr Ronald Jackson"
               timeAgo="3d ago"
@@ -96,7 +96,7 @@ const Dashboard = () => {
               content="Hand rib pepperoni thin and rib steak ranch. Pork banana rib cheese sautéed olives buffalo deep pork bell. And marinara cheese melted red mozzarella crust ham cheese olives. Aussie ham ipsum pie wing. Deep marinara mayo broccoli meatball burnt marinara. Fresh pineapple olives Hawaiian onions ricotta meat party green."
             />
 
-            <PostCard
+            <Postcard
               title="Photography Contest"
               author="Dr Ronald Jackson"
               timeAgo="3d ago"
@@ -105,7 +105,7 @@ const Dashboard = () => {
               content="Join our annual photography contest showcasing the best campus moments. Submit your entries by Friday for a chance to win exciting prizes and get featured in the university magazine."
             />
 
-            <PostCard
+            <Postcard
               title="Campus Library Hours Extended"
               author="University Administration"
               timeAgo="1d ago"
@@ -114,7 +114,7 @@ const Dashboard = () => {
               content="The main campus library will now remain open until 11 PM during weekdays to accommodate students' study needs during finals week. Additional study spaces have been arranged in the east wing."
             />
 
-            <PostCard
+            <Postcard
               title="Programming Workshop Series"
               author="Prof. Sarah Wilson"
               timeAgo="2d ago"
