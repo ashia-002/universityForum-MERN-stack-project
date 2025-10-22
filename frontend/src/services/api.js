@@ -3,7 +3,7 @@ import axios from "axios";
 
 // ✅ Deployed backend URL
 const api = axios.create({
-  baseURL: "https://university-forum-mern-stack-project.vercel.app",
+  baseURL: "http://localhost:4000",
   headers: {
     "Content-Type": "application/json",
   },
