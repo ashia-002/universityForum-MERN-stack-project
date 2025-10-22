@@ -26,8 +26,8 @@ const PORT = process.env.PORT || 4000;
 // );
 // CORS configuration - allowing multiple origins
 const allowedOrigins = [
-    "rpsuforum.vercel.app", // Development frontend
-    "http://localhost:5173/", // Production frontend URL
+    "https://rpsuforum.vercel.app",   // ✅ Production
+    "http://localhost:5173"           // ✅ Local dev
 ];
 
 app.use(cors({
