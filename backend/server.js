@@ -10,7 +10,7 @@ const authRoutes = require('../backend/src/routes/auth-routes.js');
 const deptRoutes = require('../backend/src/routes/dept-routes.js');
 const postRoutes = require('../backend/src/routes/post-routes.js');
 const eventRoutes = require('../backend/src/routes/event-routes.js');
-const announcementRoutes = require('../backend/src/routes/announcement-routes.js')
+//const announcementRoutes = require('../backend/src/routes/announcement-routes.js')
 
 const app = express();
 const PORT = process.env.PORT || 4000;
@@ -39,7 +39,7 @@ app.use('/auth', authRoutes);
 app.use('/get/department', deptRoutes);
 app.use('/post', postRoutes);
 app.use('/event', eventRoutes);
-app.use('/announcement', announcementRoutes)
+//app.use('/announcement', announcementRoutes)
 
 // Global Error Handler
 app.use((err, req, res, next) => {
