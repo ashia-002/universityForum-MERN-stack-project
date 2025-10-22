@@ -5,6 +5,7 @@ const Postcard = ({
   id,
   title = "Untitled Post",
   author = {}, // object: { _id, name, role }
+  role,
   timeAgo = "Just now",
   tags = [],
   content = "",
@@ -77,9 +78,9 @@ const Postcard = ({
 
       {/* Author Info */}
       <div className="flex flex-wrap items-center gap-2 text-sm text-[#666666] mb-5">
-        <span className="font-medium">{author?.name || "Unknown"}</span>
+        <span className="font-medium">{author || "Unknown"}</span>
         <span className="text-[#B3B3B3]">•</span>
-        <span>{author?.role || "N/A"}</span>
+        <span>{role|| "N/A"}</span>
         <span className="text-[#B3B3B3]">•</span>
         <span>{timeAgo}</span>
       </div>
