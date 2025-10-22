@@ -1,8 +1,8 @@
 // src/components/SignUp.jsx
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import logo from "../assets/logo.png";
-import api from "../services/api.js"; // ✅ connected to deployed backend
+import api from "../services/api.js";
 
 const SignUp = () => {
   const [formData, setFormData] = useState({
@@ -18,34 +18,50 @@ const SignUp = () => {
   const [showDepartmentDropdown, setShowDepartmentDropdown] = useState(false);
   const [departments, setDepartments] = useState([]);
   const [loading, setLoading] = useState(false);
-  const navigate = useNavigate();
+  const [loadingDepartments, setLoadingDepartments] = useState(true);
 
-  // ✅ Fetch department list from backend when page loads
+  const navigate = useNavigate();
+  const deptRef = useRef(null);
+  const roleRef = useRef(null);
+
+  // Fetch departments from backend
   useEffect(() => {
     const fetchDepartments = async () => {
       try {
         const response = await api.get("/get/department");
         const data = response.data;
-        if (Array.isArray(data) && data.length > 0) {
-          setDepartments(data);
-        } else {
-          console.warn("⚠️ No departments found");
-        }
+        if (Array.isArray(data)) setDepartments(data);
       } catch (error) {
         console.error("Error fetching departments:", error);
+      } finally {
+        setLoadingDepartments(false);
       }
     };
     fetchDepartments();
+  }, []);
+
+  // Close dropdowns when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (deptRef.current && !deptRef.current.contains(event.target)) {
+        setShowDepartmentDropdown(false);
+      }
+      if (roleRef.current && !roleRef.current.contains(event.target)) {
+        setShowRoleDropdown(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
   }, []);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  // ✅ Send registration data to backend
   const handleSubmit = async (e) => {
     e.preventDefault();
-
     if (
       !formData.name ||
       !formData.email ||
@@ -59,10 +75,8 @@ const SignUp = () => {
 
     try {
       setLoading(true);
-      console.log("🟢 Sending data:", formData); // debug line
-      const response = await api.post("/auth/register", formData);
+      await api.post("/auth/register", formData);
       alert("Registration successful!");
-      console.log("Registered User:", response.data);
       navigate("/login");
     } catch (error) {
       console.error("Registration error:", error);
@@ -77,7 +91,6 @@ const SignUp = () => {
     setShowRoleDropdown(false);
   };
 
-  // ✅ FIXED: Save department `_id`, display department name
   const handleDepartmentSelect = (dept) => {
     setFormData({ ...formData, department_id: dept._id });
     setShowDepartmentDropdown(false);
@@ -171,7 +184,7 @@ const SignUp = () => {
               </div>
 
               {/* Department Dropdown */}
-              <div className="relative">
+              <div className="relative" ref={deptRef}>
                 <div
                   className="w-full h-14 bg-[#F2F2F2] rounded-lg px-4 flex items-center justify-between cursor-pointer hover:bg-[#E8E8E8] transition-colors"
                   onClick={() => setShowDepartmentDropdown(!showDepartmentDropdown)}
@@ -181,9 +194,10 @@ const SignUp = () => {
                       formData.department_id ? "text-[#333333]" : "text-[#999999]"
                     }`}
                   >
-                    {/* ✅ Show department name based on selected ID */}
-                    {departments.find((d) => d._id === formData.department_id)?.name ||
-                      "Select Department"}
+                    {loadingDepartments
+                      ? "Loading..."
+                      : departments.find((d) => d._id === formData.department_id)?.name ||
+                        "Select Department"}
                   </span>
                   <div className="w-6 h-6 flex items-center justify-center">
                     <div
@@ -196,7 +210,7 @@ const SignUp = () => {
                   </div>
                 </div>
 
-                {showDepartmentDropdown && (
+                {showDepartmentDropdown && departments.length > 0 && (
                   <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-[0px_6px_18px_rgba(100,81,225,0.16)] z-10 overflow-hidden">
                     {departments.map((dept) => (
                       <div
@@ -212,7 +226,7 @@ const SignUp = () => {
               </div>
 
               {/* Role Dropdown */}
-              <div className="relative">
+              <div className="relative" ref={roleRef}>
                 <div
                   className="w-full h-14 bg-[#F2F2F2] rounded-lg px-4 flex items-center justify-between cursor-pointer hover:bg-[#E8E8E8] transition-colors"
                   onClick={() => setShowRoleDropdown(!showRoleDropdown)}
@@ -268,7 +282,7 @@ const SignUp = () => {
                   disabled={loading}
                   className="px-8 py-4 bg-[#533DDE] rounded-lg text-white font-medium text-lg hover:bg-[#311EAE] transition-colors min-w-[120px]"
                 >
-                  {loading ? "Registering..." : "Sign up"}
+                  {loading ? "Registering..." : "Sign Up"}
                 </button>
               </div>
             </form>
