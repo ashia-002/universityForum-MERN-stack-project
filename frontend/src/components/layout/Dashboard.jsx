@@ -2,6 +2,8 @@ import React, { useState, useEffect } from "react";
 import CreatePost from "./CreatePost";
 import Postcard from "./Postcard";
 import api from "../../services/api";
+
+// ✅ Day.js setup for “time ago” formatting
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
 dayjs.extend(relativeTime);
@@ -61,7 +63,10 @@ const Dashboard = () => {
           {/* Filter & Sort */}
           <div className="flex gap-4 items-center">
             <div className="relative w-44">
-              <select className="appearance-none w-full h-14 bg-white border border-[#ECE9FB] rounded-xl pl-4 pr-10 outline-none text-[#666666] text-sm font-normal focus:ring-2 focus:ring-[#533DDE] focus:border-transparent cursor-pointer" defaultValue="">
+              <select
+                className="appearance-none w-full h-14 bg-white border border-[#ECE9FB] rounded-xl pl-4 pr-10 outline-none text-[#666666] text-sm font-normal focus:ring-2 focus:ring-[#533DDE] focus:border-transparent cursor-pointer"
+                defaultValue=""
+              >
                 <option value="" disabled>
                   Department
                 </option>
@@ -78,11 +83,7 @@ const Dashboard = () => {
                 viewBox="0 0 24 24"
                 strokeWidth={2}
               >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M19 9l-7 7-7-7"
-                />
+                <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
               </svg>
             </div>
 
@@ -119,8 +120,12 @@ const Dashboard = () => {
                 content={post.description}
                 author={post.created_by?.name || "Unknown"}
                 role={post.created_by?.role || ""}
-                timeAgo={dayjs(post.createdAt).fromNow()}
-                tags={["Post", post.scope, getDepartmentName(post.department_id)]}
+                timeAgo={`Posted ${dayjs(post.createdAt).fromNow()}`}
+                tags={[
+                  "Post",
+                  post.scope,
+                  getDepartmentName(post.department_id),
+                ]}
                 initialComments={post.comments}
               />
             ))}
