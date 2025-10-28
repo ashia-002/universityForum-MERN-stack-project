@@ -26,7 +26,7 @@ const PORT = process.env.PORT || 4000;
 // );
 // CORS configuration - allowing multiple origins
 const allowedOrigins = [
-    "https://university-forum-mern-stack-project-ivory.vercel.app/",   // ✅ Production
+    "https://university-forum-mern-stack-project-ivory.vercel.app",   // ✅ Production
     "http://localhost:5173"           // ✅ Local dev
 ];
 
