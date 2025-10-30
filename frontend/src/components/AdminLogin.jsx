@@ -109,7 +109,7 @@ const AdminLogin = () => {
                   type="submit"
                   className="px-8 py-4 bg-[#533DDE] rounded-lg text-white font-medium text-lg hover:bg-[#311EAE] transition-colors min-w-[120px]"
                 >
-                  Sign In
+                  Log In
                 </button>
               </div>
             </form>

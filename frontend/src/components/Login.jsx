@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import logo from "../assets/logo.png";
-import api from "../services/api"; // ✅ Import backend connection
+import axios from "axios"; // Use axios directly
 
 const Login = () => {
   const [formData, setFormData] = useState({
@@ -28,8 +28,12 @@ const Login = () => {
     setLoading(true);
 
     try {
-      // 🔹 Send login request to backend
-      const response = await api.post("/auth/login", formData);
+      // 🔹 Use VITE_API_URL from .env + withCredentials
+      const response = await axios.post(
+        `${import.meta.env.VITE_API_URL}/auth/login`,
+        formData,
+        { withCredentials: true }
+      );
 
       // 🔹 If success, store token and user info
       localStorage.setItem("token", response.data.token);
@@ -47,17 +51,9 @@ const Login = () => {
     }
   };
 
-  const handleSignUpRedirect = () => {
-    navigate('/signup');
-  };
-
-  const handleAdminRedirect = () => {
-    navigate('/admin-login');
-  };
-
-  const handleForgotPassword = () => {
-    alert('Forgot password functionality coming soon!');
-  };
+  const handleSignUpRedirect = () => navigate('/signup');
+  const handleAdminRedirect = () => navigate('/admin-login');
+  const handleForgotPassword = () => alert('Forgot password functionality coming soon!');
 
   return (
     <div className="min-h-screen bg-[#FAF9FF] font-poppins relative overflow-hidden">
@@ -65,7 +61,7 @@ const Login = () => {
       <div className="absolute w-[203px] h-[203px] left-[119px] top-[489px] bg-[#8B7CE9] blur-[100px]"></div>
       <div className="absolute w-[111px] h-[111px] left-[455px] top-[350px] bg-[#6451E1] blur-[100px]"></div>
       
-      {/* Logo Section - Top Left */}
+      {/* Logo Section */}
       <div className="absolute left-16 top-12 flex items-center gap-3">
         <img src={logo} alt="Data Drop Logo" className="w-14 h-14 object-contain rounded-lg" />
         <div className="flex flex-col">
@@ -74,7 +70,7 @@ const Login = () => {
         </div>
       </div>
 
-      {/* Admin Button - Top Right */}
+      {/* Admin Button */}
       <button 
         onClick={handleAdminRedirect}
         className="absolute right-16 top-16 px-4 py-2 bg-[#ECE9FB] rounded-lg text-[#533DDE] font-medium text-lg hover:bg-[#E0DCF9] transition-colors"
@@ -82,18 +78,16 @@ const Login = () => {
         Admin?
       </button>
 
-      {/* Center Background Logo */}
+      {/* Center Logo */}
       <div className="absolute w-[251px] h-[251px] left-[248px] top-[415px]">
         <img src={logo} alt="Data Drop Background Logo" className="w-[235px] h-[235px] rounded-[44px] shadow-[0px_6px_30px_rgba(41,35,92,0.25)]" />
       </div>
 
-      {/* Main Login Card */}
+      {/* Login Card */}
       <div className="flex justify-center items-center min-h-screen">
         <div className="w-full max-w-[855px] bg-white rounded-xl shadow-[0px_6px_18px_rgba(100,81,225,0.16)] p-12 ml-64">
           <div className="flex flex-col gap-8 w-full">
-            <h2 className="text-4xl font-bold text-center text-[#333333] tracking-wide mb-4">
-              Login
-            </h2>
+            <h2 className="text-4xl font-bold text-center text-[#333333] tracking-wide mb-4">Login</h2>
 
             <form onSubmit={handleSubmit} className="flex flex-col gap-6">
               {/* Email Field */}
@@ -109,7 +103,7 @@ const Login = () => {
                 />
               </div>
 
-              {/* Password Field with Show/Hide */}
+              {/* Password Field */}
               <div className="w-full h-14 bg-[#F2F2F2] rounded-lg px-4 flex items-center justify-between">
                 <input
                   type={showPassword ? "text" : "password"}
@@ -130,11 +124,7 @@ const Login = () => {
               </div>
 
               {/* Error Message */}
-              {error && (
-                <p className="text-red-500 text-center text-base font-medium">
-                  {error}
-                </p>
-              )}
+              {error && <p className="text-red-500 text-center text-base font-medium">{error}</p>}
 
               {/* Forgot Password */}
               <div className="flex justify-end">
