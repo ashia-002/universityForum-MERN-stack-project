@@ -1,3 +1,4 @@
+// src/components/CreatePost.jsx
 import React, { useState } from "react";
 import api from "../../services/api.js";
 
@@ -5,24 +6,24 @@ const CreatePost = ({ onClose }) => {
   const [formData, setFormData] = useState({
     title: "",
     description: "",
-    department: "",
-    community: "",
+    department_id: "",
+    community_id: "",
+    image: "", // will store image URL
   });
-  const [image, setImage] = useState(null);
+  const [imageFile, setImageFile] = useState(null); // store selected file
   const [loading, setLoading] = useState(false);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleImageUpload = (event) => {
-    const file = event.target.files[0];
-    if (file) setImage(file);
+  const handleImageChange = (e) => {
+    setImageFile(e.target.files[0]);
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!formData.title || !formData.description || !formData.department || !formData.community) {
+    if (!formData.title || !formData.description || !formData.department_id) {
       alert("Please fill in all required fields");
       return;
     }
@@ -30,24 +31,39 @@ const CreatePost = ({ onClose }) => {
     try {
       setLoading(true);
 
-      // Using FormData for image upload
-      const postData = new FormData();
-      postData.append("title", formData.title);
-      postData.append("description", formData.description);
-      postData.append("department", formData.department);
-      postData.append("community", formData.community);
-      if (image) postData.append("image", image);
+      let imageUrl = formData.image;
 
-      const response = await api.post("/post/create", postData, {
-        headers: { "Content-Type": "multipart/form-data" },
-      });
+      // Upload image if selected
+      if (imageFile) {
+        const imgData = new FormData();
+        imgData.append("file", imageFile);
+
+        const imgRes = await api.post("/upload", imgData, {
+          headers: { "Content-Type": "multipart/form-data" },
+        });
+
+        imageUrl = imgRes.data.url; // assume backend returns { url: "..." }
+      }
+
+      const payload = {
+        title: formData.title,
+        description: formData.description,
+        scope: "university",
+        community_id: formData.community_id || null,
+        department_id: formData.department_id,
+        image: imageUrl || "",
+      };
+
+      console.log("Payload to backend:", payload);
+
+      const response = await api.post("/post/create", payload);
 
       alert("Post created successfully!");
       console.log("Created Post:", response.data);
       onClose();
     } catch (error) {
-      console.error("Post creation error:", error);
-      alert(error.response?.data?.message || "Failed to create post");
+      console.error("❌ Post creation error:", error);
+      alert(error.response?.data?.msg || "Failed to create post");
     } finally {
       setLoading(false);
     }
@@ -55,7 +71,6 @@ const CreatePost = ({ onClose }) => {
 
   return (
     <div className="p-10 bg-white rounded-3xl shadow-xl font-poppins">
-      {/* Header */}
       <div className="flex justify-between items-center mb-8">
         <h2 className="text-3xl font-semibold text-[#2C2C2C]">Create Post</h2>
         <button
@@ -69,7 +84,6 @@ const CreatePost = ({ onClose }) => {
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
-        {/* Title */}
         <div>
           <label className="block text-base font-medium text-[#555] mb-2">Title</label>
           <input
@@ -83,7 +97,6 @@ const CreatePost = ({ onClose }) => {
           />
         </div>
 
-        {/* Description */}
         <div>
           <label className="block text-base font-medium text-[#555] mb-2">Description</label>
           <textarea
@@ -97,59 +110,47 @@ const CreatePost = ({ onClose }) => {
           />
         </div>
 
-        {/* Buttons Row */}
         <div className="flex items-center gap-4">
-          {/* Image Upload */}
-          <div>
-            <input
-              type="file"
-              id="image-upload"
-              className="hidden"
-              accept="image/*"
-              onChange={handleImageUpload}
-            />
-            <label
-              htmlFor="image-upload"
-              className="w-36 h-14 bg-[#F8F9FF] border border-[#E3E0F9] rounded-xl flex items-center justify-center gap-2 cursor-pointer hover:bg-[#ECE9FB] transition-colors text-[#533DDE] font-medium"
-            >
-              📷 Image
-            </label>
-          </div>
-
-          {/* Department Dropdown */}
           <select
-            name="department"
-            value={formData.department}
+            name="department_id"
+            value={formData.department_id}
             onChange={handleChange}
             className="w-36 h-14 bg-[#F8F9FF] border border-[#E3E0F9] rounded-xl px-4 outline-none focus:ring-2 focus:ring-[#533DDE] text-[#533DDE] font-medium"
             required
           >
             <option value="">Department</option>
-            <option value="cse">CSE</option>
-            <option value="bba">BBA</option>
-            <option value="ece">ECE</option>
+            <option value="68e68902fe6bae63caea28c7">CSE</option>
+            <option value="68e68902fe6bae63caea28c8">BBA</option>
+            <option value="68e68902fe6bae63caea28c9">ECE</option>
           </select>
 
-          {/* Community Dropdown */}
           <select
-            name="community"
-            value={formData.community}
+            name="community_id"
+            value={formData.community_id}
             onChange={handleChange}
             className="w-36 h-14 bg-[#F8F9FF] border border-[#E3E0F9] rounded-xl px-4 outline-none focus:ring-2 focus:ring-[#533DDE] text-[#533DDE] font-medium"
-            required
           >
             <option value="">Community</option>
-            <option value="general">General Discussion</option>
-            <option value="academic">Academic Help</option>
-            <option value="events">Campus Events</option>
-            <option value="projects">Student Projects</option>
+            <option value="68e689f2fe6bae63caea2901">General Discussion</option>
+            <option value="68e689f2fe6bae63caea2902">Academic Help</option>
+            <option value="68e689f2fe6bae63caea2903">Campus Events</option>
+            <option value="68e689f2fe6bae63caea2904">Student Projects</option>
           </select>
         </div>
 
-        {/* Divider */}
+        {/* Image Upload */}
+        <div>
+          <label className="block text-base font-medium text-[#555] mb-2">Attach Image (optional)</label>
+          <input
+            type="file"
+            accept="image/*"
+            onChange={handleImageChange}
+            className="w-full text-sm text-[#555]"
+          />
+        </div>
+
         <div className="border-t border-[#ECE9FB] my-6"></div>
 
-        {/* Action Buttons */}
         <div className="flex justify-end gap-3">
           <button
             type="button"
