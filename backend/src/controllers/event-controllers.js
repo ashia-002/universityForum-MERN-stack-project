@@ -1,4 +1,5 @@
 const Event = require('../models/posts/event');
+const Community = require('../models/community');
 
 // Create Event
 exports.createEvent = async (req, res) => {
@@ -125,11 +126,11 @@ exports.toggleVote = async (req, res) => {
     if (index === -1) {
       event.votes.push(userId);
       await event.save();
-      return res.status(200).json({ msg: 'Voted successfully' });
+      return res.status(200).json({ msg: 'Liked successfully' });
     } else {
       event.votes.splice(index, 1);
       await event.save();
-      return res.status(200).json({ msg: 'Vote removed' });
+      return res.status(200).json({ msg: 'Like removed' });
     }
   } catch (err) {
     console.error(err);
