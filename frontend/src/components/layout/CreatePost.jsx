@@ -1,16 +1,15 @@
-// src/components/CreatePost.jsx
 import React, { useState } from "react";
 import api from "../../services/api.js";
 
-const CreatePost = ({ onClose }) => {
+const CreatePost = ({ onClose, onAddPost }) => {
   const [formData, setFormData] = useState({
     title: "",
     description: "",
     department_id: "",
     community_id: "",
-    image: "", // will store image URL
+    image: "",
   });
-  const [imageFile, setImageFile] = useState(null); // store selected file
+  const [imageFile, setImageFile] = useState(null);
   const [loading, setLoading] = useState(false);
 
   const handleChange = (e) => {
@@ -30,10 +29,8 @@ const CreatePost = ({ onClose }) => {
 
     try {
       setLoading(true);
-
       let imageUrl = formData.image;
 
-      // Upload image if selected
       if (imageFile) {
         const imgData = new FormData();
         imgData.append("file", imageFile);
@@ -42,7 +39,7 @@ const CreatePost = ({ onClose }) => {
           headers: { "Content-Type": "multipart/form-data" },
         });
 
-        imageUrl = imgRes.data.url; // assume backend returns { url: "..." }
+        imageUrl = imgRes.data.url;
       }
 
       const payload = {
@@ -54,12 +51,15 @@ const CreatePost = ({ onClose }) => {
         image: imageUrl || "",
       };
 
-      console.log("Payload to backend:", payload);
-
       const response = await api.post("/post/create", payload);
 
       alert("Post created successfully!");
-      console.log("Created Post:", response.data);
+
+      // ✅ Add the new post to Dashboard immediately
+      if (onAddPost) {
+        onAddPost(response.data.post || response.data); // use returned post object
+      }
+
       onClose();
     } catch (error) {
       console.error("❌ Post creation error:", error);
@@ -121,7 +121,7 @@ const CreatePost = ({ onClose }) => {
             <option value="">Department</option>
             <option value="68e68902fe6bae63caea28c7">CSE</option>
             <option value="68e68902fe6bae63caea28c8">BBA</option>
-            <option value="68e68902fe6bae63caea28c9">ECE</option>
+            <option value="68e68902fe6bae63caea28c9">EEE</option>
           </select>
 
           <select
@@ -138,7 +138,6 @@ const CreatePost = ({ onClose }) => {
           </select>
         </div>
 
-        {/* Image Upload */}
         <div>
           <label className="block text-base font-medium text-[#555] mb-2">Attach Image (optional)</label>
           <input
