@@ -16,6 +16,9 @@ const userSchema = new mongoose.Schema({
   password: { type: String, required: true, minlength: 6 },
 
   role: { type: String, enum: ['student', 'teacher'], required: true },
+  profile_pic: { type: String, default: 'https://placehold.co/200x200?text=Profile' },
+  banner_pic: { type: String, default: 'https://placehold.co/1200x300?text=Banner' },
+  about_me: { type: String, default: '' },
   department_id: { type: mongoose.Schema.Types.ObjectId, ref: 'Department' },
 
   //Communities the user has joined
