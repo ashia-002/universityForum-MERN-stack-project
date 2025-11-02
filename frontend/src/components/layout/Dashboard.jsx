@@ -1,9 +1,8 @@
+// src/components/layout/Dashboard.jsx
 import React, { useState, useEffect } from "react";
 import CreatePost from "./CreatePost";
 import Postcard from "./Postcard";
 import api from "../../services/api";
-
-// ✅ Day.js setup for “time ago” formatting
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
 dayjs.extend(relativeTime);
@@ -13,8 +12,8 @@ const Dashboard = () => {
   const [activeButton, setActiveButton] = useState("Recent");
   const [posts, setPosts] = useState([]);
   const [departments, setDepartments] = useState([]);
+  const [selectedDept, setSelectedDept] = useState("");
 
-  // Fetch posts and departments
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -28,48 +27,58 @@ const Dashboard = () => {
         console.error("Error fetching data:", err);
       }
     };
-
     fetchData();
   }, []);
 
-  // Map department ID to department name
   const getDepartmentName = (id) => {
     const dept = departments.find((d) => d._id === id);
     return dept ? dept.name : "Unknown Department";
   };
 
+  // Filter & sort posts
+  const filteredPosts = posts
+    .filter((post) =>
+      selectedDept ? post.department_id === selectedDept : true
+    )
+    .sort((a, b) => {
+      if (activeButton === "Recent") {
+        return new Date(b.createdAt) - new Date(a.createdAt);
+      } else if (activeButton === "Top") {
+        return (b.comments?.length || 0) - (a.comments?.length || 0);
+      }
+      return 0;
+    });
+
   return (
     <div className="min-h-screen bg-[#FAF9FF] font-poppins">
       <div
-        className={`ml-80 pt-32 px-8 flex gap-8 transition-all duration-300 ${
+        className={`pt-32 px-4 sm:px-6 md:px-8 lg:px-10 flex flex-col lg:flex-row gap-6 transition-all duration-300 ${
           showCreatePost ? "blur-sm pointer-events-none select-none" : ""
-        }`}
+        } ${window.innerWidth >= 1024 ? "ml-80" : ""}`}
       >
-        {/* Main Content */}
         <div className="flex-1 flex flex-col gap-4">
           {/* Add Post */}
-          <div className="flex justify-between items-center bg-white rounded-2xl p-6 shadow-[0px_4px_20px_rgba(100,81,225,0.15)]">
-            <h1 className="text-xl font-semibold text-[#333333]">
+          <div className="flex justify-between items-center bg-white rounded-2xl p-4 sm:p-6 shadow-[0px_4px_20px_rgba(100,81,225,0.15)]">
+            <h1 className="text-lg sm:text-xl font-semibold text-[#333333]">
               Add a new post
             </h1>
             <button
               onClick={() => setShowCreatePost(true)}
-              className="w-12 h-12 bg-[#533DDE] text-white rounded-xl font-medium hover:bg-[#311EAE] transition-colors flex items-center justify-center text-2xl"
+              className="w-10 h-10 sm:w-12 sm:h-12 bg-[#533DDE] text-white rounded-xl font-medium hover:bg-[#311EAE] transition-colors flex items-center justify-center text-xl sm:text-2xl"
             >
               +
             </button>
           </div>
 
           {/* Filter & Sort */}
-          <div className="flex gap-4 items-center">
-            <div className="relative w-44">
+          <div className="flex flex-wrap gap-4 items-center">
+            <div className="relative w-full sm:w-44">
               <select
-                className="appearance-none w-full h-14 bg-white border border-[#ECE9FB] rounded-xl pl-4 pr-10 outline-none text-[#666666] text-sm font-normal focus:ring-2 focus:ring-[#533DDE] focus:border-transparent cursor-pointer"
-                defaultValue=""
+                className="appearance-none w-full h-12 sm:h-14 bg-white border border-[#ECE9FB] rounded-xl pl-4 pr-10 outline-none text-[#666666] text-sm font-normal focus:ring-2 focus:ring-[#533DDE] focus:border-transparent cursor-pointer"
+                value={selectedDept}
+                onChange={(e) => setSelectedDept(e.target.value)}
               >
-                <option value="" disabled>
-                  Department
-                </option>
+                <option value="">All Departments</option>
                 {departments.map((dept) => (
                   <option key={dept._id} value={dept._id}>
                     {dept.name}
@@ -89,7 +98,7 @@ const Dashboard = () => {
 
             <button
               onClick={() => setActiveButton("Recent")}
-              className={`w-32 h-14 rounded-xl font-medium transition-colors ${
+              className={`w-28 sm:w-32 h-12 sm:h-14 rounded-xl font-medium transition-colors ${
                 activeButton === "Recent"
                   ? "bg-[#533DDE] text-white"
                   : "bg-[#F8F9FF] text-[#533DDE] hover:bg-[#ECE9FB]"
@@ -100,7 +109,7 @@ const Dashboard = () => {
 
             <button
               onClick={() => setActiveButton("Top")}
-              className={`w-32 h-14 rounded-xl font-medium transition-colors ${
+              className={`w-28 sm:w-32 h-12 sm:h-14 rounded-xl font-medium transition-colors ${
                 activeButton === "Top"
                   ? "bg-[#533DDE] text-white"
                   : "bg-[#F8F9FF] text-[#533DDE] hover:bg-[#ECE9FB]"
@@ -112,7 +121,7 @@ const Dashboard = () => {
 
           {/* Render Posts */}
           <div className="flex flex-col gap-4">
-            {posts.map((post) => (
+            {filteredPosts.map((post) => (
               <Postcard
                 key={post._id}
                 id={post._id}
@@ -132,15 +141,17 @@ const Dashboard = () => {
           </div>
         </div>
 
-        {/* Right Sidebar */}
-        <div className="w-80 flex-shrink-0"></div>
+        <div className="hidden lg:block w-80 flex-shrink-0"></div>
       </div>
 
       {/* Create Post Modal */}
       {showCreatePost && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl w-full max-w-6xl">
-            <CreatePost onClose={() => setShowCreatePost(false)} />
+            <CreatePost
+              onClose={() => setShowCreatePost(false)}
+              onAddPost={(newPost) => setPosts([newPost, ...posts])}
+            />
           </div>
         </div>
       )}
