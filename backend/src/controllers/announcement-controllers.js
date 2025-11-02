@@ -8,17 +8,28 @@ exports.createAnnouncement = async (req, res) => {
     const { title, description, scope, community_id, department_id, priority_level } = req.body;
     const created_by = req.user.id;
 
+    // ✅ Check if announcement is for a community
+    if (community_id) {
+      const community = await Community.findById(community_id);
+      if (!community) return res.status(404).json({ msg: 'Community not found' });
+
+      // Check membership
+      if (!community.members.includes(created_by)) {
+        return res.status(403).json({ msg: 'You must join this community to create an announcement.' });
+      }
+    }
+
     const announcement = await Announcement.create({
       title,
       description,
-      scope, // 'community' | 'department' | 'university'
+      scope,
       community_id: community_id || null,
       department_id: department_id || null,
       priority_level: priority_level || 'default',
       created_by
     });
 
-    //If part of a community, push to that community
+    // Optional: attach to community
     if (community_id) {
       await Community.findByIdAndUpdate(community_id, {
         $push: { announcements: announcement._id }
@@ -34,7 +45,6 @@ exports.createAnnouncement = async (req, res) => {
     res.status(500).json({ msg: 'Server error', error: error.message });
   }
 };
-
 
 // Delete an announcement (admin or creator only)
 exports.deleteAnnouncement = async (req, res) => {
