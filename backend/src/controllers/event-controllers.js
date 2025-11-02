@@ -7,6 +7,17 @@ exports.createEvent = async (req, res) => {
     const { title, description, scope, community_id, department_id, date, time, venue, image } = req.body;
     const created_by = req.user.id;
 
+    // ✅ Check if event belongs to a community
+    if (community_id) {
+      const community = await Community.findById(community_id);
+      if (!community) return res.status(404).json({ msg: 'Community not found' });
+
+      // Check membership
+      if (!community.members.includes(created_by)) {
+        return res.status(403).json({ msg: 'You must join this community to create an event.' });
+      }
+    }
+
     const newEvent = await Event.create({
       title,
       description,
