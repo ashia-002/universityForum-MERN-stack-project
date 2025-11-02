@@ -8,7 +8,7 @@ const { authentication } = require('../middlewares/authentication.js');
 router.post('/create', authentication, postController.createPost);
 
 //Delete a post (only creator or admin)
-router.delete('/:id', authentication, postController.deletePost);
+router.delete('/:id/delete', authentication, postController.deletePost);
 
 //Like / Unlike post
 router.post('/:id/like', authentication, postController.toggleLike);
