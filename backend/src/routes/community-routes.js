@@ -14,4 +14,7 @@ router.get('/:id/posts', communityController.getCommunityPosts);
 router.get('/:id/events', communityController.getCommunityEvents);
 router.get('/:id/announcements', communityController.getCommunityAnnouncements);
 
+router.post('/:id/join', authentication, communityController.joinCommunity);
+router.post('/:id/leave', authentication, communityController.leaveCommunity);
+
 module.exports = router;
