@@ -1,35 +1,47 @@
 const Post = require('../models/posts/post');
 const User = require('../models/user');
+const Community = require('../models/community');
 
 //Create Post
 exports.createPost = async (req, res) => {
-    try {
-        const { title, description, scope, community_id, department_id, image } = req.body;
-        const created_by = req.user.id;
-        
-        console.log('Request body:', req.body);
+  try {
+    const { title, description, scope, community_id, department_id, image } = req.body;
+    const created_by = req.user.id;
 
-        const newPost = await Post.create({
-            title,
-            description,
-            scope,
-            community_id: community_id || null,
-            department_id: department_id || null,
-            created_by,
-            image
-        });
+    console.log('Request body:', req.body);
 
-        res.status(201).json({
-            msg: 'Post created successfully',
-            post: newPost
-        });
+    // ✅ Check if posting under a community
+    if (community_id) {
+      const community = await Community.findById(community_id);
+      if (!community) return res.status(404).json({ msg: 'Community not found' });
 
-    } catch (error) {
-        console.log(error);
-        res.status(500).json({
-            msg: 'Server side error',
-        })
+      // Check membership
+      if (!community.members.includes(created_by)) {
+        return res.status(403).json({ msg: 'You must join this community to create a post.' });
+      }
     }
+
+    const newPost = await Post.create({
+      title,
+      description,
+      scope,
+      community_id: community_id || null,
+      department_id: department_id || null,
+      created_by,
+      image
+    });
+
+    res.status(201).json({
+      msg: 'Post created successfully',
+      post: newPost
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({
+      msg: 'Server side error',
+      error: error.message
+    });
+  }
 };
 
 exports.deletePost = async (req, res) => {
