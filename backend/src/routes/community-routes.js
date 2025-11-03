@@ -9,6 +9,7 @@ router.put('/edit/:id', authentication, communityController.editCommunity);
 router.delete('/delete/:id', authentication, communityController.deleteCommunity);
 
 // View & Fetch
+router.get('/view-all', communityController.getAllCommunities)
 router.get('/view/:id', communityController.getCommunityById); 
 router.get('/:id/posts', communityController.getCommunityPosts);
 router.get('/:id/events', communityController.getCommunityEvents);
