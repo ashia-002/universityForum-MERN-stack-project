@@ -169,6 +169,20 @@ exports.getCommunityById = async (req, res) => {
   }
 };
 
+exports.getAllCommunities = async (req, res) => {
+  try {
+    const communities = await Community.find()
+      .populate('created_by', 'name email')
+      .select('name description banner_image icon_image visibility createdAt created_by members')
+      .sort({ createdAt: -1 }); // newest first
+
+    res.status(200).json({ communities });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ msg: 'Server error', error: err.message });
+  }
+};
+
 exports.joinCommunity = async (req, res) => {
   try {
     const { id } = req.params; // community id
