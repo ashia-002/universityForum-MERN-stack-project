@@ -6,6 +6,8 @@ import AdminLogin from "./components/AdminLogin";
 import Dashboard from "./components/layout/Dashboard";
 import GlobalLayout from "./components/GlobalLayout";
 import CommunitiesDashboard from "./components/layout/CommunitiesDashboard";
+import EventDashboard from "./components/layout/EventDashboard"; // ✅ Import EventDashboard
+import ViewCommunity from "./components/layout/ViewCommunity"; // ✅ Import ViewCommunity
 
 function App() {
   return (
@@ -49,26 +51,22 @@ function App() {
           }
         />
 
+        {/* ✅ ViewCommunity Route */}
         <Route
-          path="/my-community"
+          path="/community/:communityId"
           element={
             <GlobalLayout>
-              <div className="flex-1 p-8 bg-[#FAF9FF] min-h-screen">
-                <h1 className="text-2xl font-bold text-[#180F57]">My Community</h1>
-                <p className="text-[#666666]">Coming soon...</p>
-              </div>
+              <ViewCommunity />
             </GlobalLayout>
           }
         />
 
+        {/* ✅ EventDashboard Route */}
         <Route
           path="/events"
           element={
             <GlobalLayout>
-              <div className="flex-1 p-8 bg-[#FAF9FF] min-h-screen">
-                <h1 className="text-2xl font-bold text-[#180F57]">Events</h1>
-                <p className="text-[#666666]">Coming soon...</p>
-              </div>
+              <EventDashboard />
             </GlobalLayout>
           }
         />

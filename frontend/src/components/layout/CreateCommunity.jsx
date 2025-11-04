@@ -5,13 +5,15 @@ const CreateCommunity = ({ onClose }) => {
   const [formData, setFormData] = useState({
     name: "",
     description: "",
-    department_id: "", // Add department id field as backend requires it
+    department_id: "",
     banner_image: "",
     icon_image: "",
   });
   const [loading, setLoading] = useState(false);
   const [newTagInput, setNewTagInput] = useState("");
   const [tags, setTags] = useState([]);
+  const [bannerFile, setBannerFile] = useState(null); // ✅ Store actual file objects
+  const [iconFile, setIconFile] = useState(null);     // ✅ Store actual file objects
   const iconInputRef = useRef(null);
   const bannerInputRef = useRef(null);
 
@@ -20,13 +22,25 @@ const CreateCommunity = ({ onClose }) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  // Handle local preview uploads (for now using URL, not actual file upload)
+  // ✅ Option 1: Convert to Base64 for preview
   const handleFileChange = async (e, type) => {
     const file = e.target.files[0];
     if (file) {
-      const fileUrl = URL.createObjectURL(file);
-      if (type === "icon") setFormData({ ...formData, icon_image: fileUrl });
-      else if (type === "banner") setFormData({ ...formData, banner_image: fileUrl });
+      // Store the actual file for upload
+      if (type === "icon") setIconFile(file);
+      else if (type === "banner") setBannerFile(file);
+
+      // Convert to base64 for preview (fixes security error)
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const base64String = event.target.result;
+        if (type === "icon") {
+          setFormData(prev => ({ ...prev, icon_image: base64String }));
+        } else if (type === "banner") {
+          setFormData(prev => ({ ...prev, banner_image: base64String }));
+        }
+      };
+      reader.readAsDataURL(file);
     }
   };
 
@@ -43,7 +57,7 @@ const CreateCommunity = ({ onClose }) => {
     setTags(tags.filter((tag) => tag !== tagToRemove));
   };
 
-  // ✅ Updated handleSubmit
+  // ✅ Option 2: Use FormData for actual file upload
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -55,14 +69,34 @@ const CreateCommunity = ({ onClose }) => {
     try {
       setLoading(true);
 
-      // Using api.js instance which already handles baseURL + token
-      const res = await api.post("/api/community/create", {
+      // Create FormData for file upload
+      const submitData = new FormData();
+      submitData.append('name', formData.name);
+      submitData.append('description', formData.description);
+      submitData.append('department_id', formData.department_id);
+      submitData.append('tags', JSON.stringify(tags));
+
+      // Append actual files if they exist
+      if (bannerFile) {
+        submitData.append('banner_image', bannerFile);
+      }
+      if (iconFile) {
+        submitData.append('icon_image', iconFile);
+      }
+
+      console.log("Submitting FormData with files:", {
         name: formData.name,
         description: formData.description,
         department_id: formData.department_id,
-        banner_image: formData.banner_image || "",
-        icon_image: formData.icon_image || "",
         tags: tags,
+        bannerFile: bannerFile?.name,
+        iconFile: iconFile?.name
+      });
+
+      const res = await api.post("/community/create", submitData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
       });
 
       console.log("✅ Community created:", res.data);
@@ -76,6 +110,13 @@ const CreateCommunity = ({ onClose }) => {
     }
   };
 
+  // Clear file inputs when modal closes
+  const handleClose = () => {
+    setBannerFile(null);
+    setIconFile(null);
+    onClose();
+  };
+
   return (
     <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center p-4 z-50">
       <div className="bg-white rounded-2xl shadow-xl w-full max-w-5xl flex p-8 relative font-inter">
@@ -86,7 +127,7 @@ const CreateCommunity = ({ onClose }) => {
               Create your own community!
             </h2>
             <button
-              onClick={onClose}
+              onClick={handleClose}
               className="text-[#999999] hover:text-[#2C2C2C]"
             >
               ✕
@@ -144,9 +185,9 @@ const CreateCommunity = ({ onClose }) => {
                   <button
                     type="button"
                     onClick={() => iconInputRef.current.click()}
-                    className="w-full p-3 border rounded-lg text-[#533DDE]"
+                    className="w-full p-3 border rounded-lg text-[#533DDE] hover:bg-[#F8F9FF] transition-colors"
                   >
-                    Upload Icon
+                    {iconFile ? `Icon: ${iconFile.name}` : "Upload Icon"}
                   </button>
                 </div>
                 <div>
@@ -161,11 +202,16 @@ const CreateCommunity = ({ onClose }) => {
                   <button
                     type="button"
                     onClick={() => bannerInputRef.current.click()}
-                    className="w-full p-3 border rounded-lg text-[#533DDE]"
+                    className="w-full p-3 border rounded-lg text-[#533DDE] hover:bg-[#F8F9FF] transition-colors"
                   >
-                    Upload Banner
+                    {bannerFile ? `Banner: ${bannerFile.name}` : "Upload Banner"}
                   </button>
                 </div>
+              </div>
+              {/* File status indicators */}
+              <div className="mt-2 text-xs text-[#666666]">
+                {iconFile && <div>✓ Icon selected: {iconFile.name}</div>}
+                {bannerFile && <div>✓ Banner selected: {bannerFile.name}</div>}
               </div>
             </div>
 
@@ -182,7 +228,7 @@ const CreateCommunity = ({ onClose }) => {
                     <button
                       type="button"
                       onClick={() => handleRemoveTag(tag)}
-                      className="ml-1 text-[#533DDE]"
+                      className="ml-1 text-[#533DDE] hover:text-[#311EAE]"
                     >
                       &times;
                     </button>
@@ -196,12 +242,12 @@ const CreateCommunity = ({ onClose }) => {
                   onKeyDown={(e) =>
                     e.key === "Enter" && (e.preventDefault(), handleAddTag())
                   }
-                  className="px-4 py-2 bg-[#F4F2FF] text-[#533DDE] rounded-full outline-none"
+                  className="px-4 py-2 bg-[#F4F2FF] text-[#533DDE] rounded-full outline-none placeholder-[#533DDE] placeholder-opacity-60"
                 />
                 <button
                   type="button"
                   onClick={handleAddTag}
-                  className="px-4 py-2 bg-[#533DDE] text-white rounded-full"
+                  className="px-4 py-2 bg-[#533DDE] text-white rounded-full hover:bg-[#311EAE] transition-colors"
                 >
                   Add
                 </button>
@@ -212,15 +258,15 @@ const CreateCommunity = ({ onClose }) => {
             <div className="flex justify-end gap-3 pt-6">
               <button
                 type="button"
-                onClick={onClose}
-                className="px-8 py-3 bg-[#EBEBEB] text-[#555555] rounded-lg"
+                onClick={handleClose}
+                className="px-8 py-3 bg-[#EBEBEB] text-[#555555] rounded-lg hover:bg-[#DDDDDD] transition-colors"
               >
                 Back
               </button>
               <button
                 type="submit"
                 disabled={loading}
-                className="px-8 py-3 bg-[#533DDE] text-white rounded-lg"
+                className="px-8 py-3 bg-[#533DDE] text-white rounded-lg hover:bg-[#311EAE] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {loading ? "Creating..." : "Create"}
               </button>
@@ -241,7 +287,11 @@ const CreateCommunity = ({ onClose }) => {
                 backgroundPosition: "center",
               }}
             >
-              {!formData.banner_image && "Banner Preview"}
+              {!formData.banner_image && (
+                <div className="w-full h-full flex items-center justify-center text-[#999999] text-sm">
+                  Banner Preview
+                </div>
+              )}
             </div>
             <div className="absolute top-16 left-4 w-16 h-16 rounded-full border-4 border-white overflow-hidden bg-[#533DDE] flex items-center justify-center text-white text-lg">
               {formData.icon_image ? (
