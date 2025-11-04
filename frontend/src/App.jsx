@@ -8,6 +8,7 @@ import GlobalLayout from "./components/GlobalLayout";
 import CommunitiesDashboard from "./components/layout/CommunitiesDashboard";
 import EventDashboard from "./components/layout/EventDashboard"; // ✅ Import EventDashboard
 import ViewCommunity from "./components/layout/ViewCommunity"; // ✅ Import ViewCommunity
+import AnnouncementDashboard from "./components/layout/AnnouncementDashboard"; // ✅ Import AnnouncementDashboard
 
 function App() {
   return (
@@ -71,14 +72,12 @@ function App() {
           }
         />
 
+        {/* ✅ AnnouncementDashboard Route */}
         <Route
           path="/announcements"
           element={
             <GlobalLayout>
-              <div className="flex-1 p-8 bg-[#FAF9FF] min-h-screen">
-                <h1 className="text-2xl font-bold text-[#180F57]">Announcements</h1>
-                <p className="text-[#666666]">Coming soon...</p>
-              </div>
+              <AnnouncementDashboard />
             </GlobalLayout>
           }
         />

@@ -1,3 +1,4 @@
+// src/components/layout/PostCard.jsx
 import React, { useState } from "react";
 import api from "../../services/api.js";
 
@@ -10,6 +11,7 @@ const Postcard = ({
   content = "",
   comments: initialComments = [],
   showCommentButton = true,
+  type = "post" // "post" or "announcement"
 }) => {
   const [commentText, setCommentText] = useState("");
   const [comments, setComments] = useState(initialComments);
@@ -26,7 +28,11 @@ const Postcard = ({
 
     try {
       setLoadingComment(true);
-      const response = await api.post(`/post/${id}/comment`, { text: commentText });
+      const endpoint = type === "announcement" 
+        ? `/announcement/${id}/comment` 
+        : `/post/${id}/comment`;
+      
+      const response = await api.post(endpoint, { text: commentText });
       setComments(response.data.comments || []);
       setCommentText("");
     } catch (error) {
@@ -47,11 +53,15 @@ const Postcard = ({
   const handleLikePost = async () => {
     try {
       setLoadingLike(true);
-      await api.post(`/post/${id}/like`);
+      const endpoint = type === "announcement" 
+        ? `/announcement/${id}/like` 
+        : `/post/${id}/like`;
+      
+      await api.post(endpoint);
       setLiked(!liked);
     } catch (error) {
-      console.error("Error liking post:", error);
-      alert(error.response?.data?.message || "Failed to like post");
+      console.error("Error liking:", error);
+      alert(error.response?.data?.message || `Failed to like ${type}`);
     } finally {
       setLoadingLike(false);
     }
@@ -60,11 +70,15 @@ const Postcard = ({
   const handleBookmarkPost = async () => {
     try {
       setLoadingBookmark(true);
-      await api.post(`/post/${id}/bookmark`);
+      const endpoint = type === "announcement" 
+        ? `/announcement/bookmark/${id}` 
+        : `/post/${id}/bookmark`;
+      
+      await api.post(endpoint);
       setBookmarked(!bookmarked);
     } catch (error) {
-      console.error("Error bookmarking post:", error);
-      alert(error.response?.data?.message || "Failed to bookmark post");
+      console.error("Error bookmarking:", error);
+      alert(error.response?.data?.message || `Failed to bookmark ${type}`);
     } finally {
       setLoadingBookmark(false);
     }
