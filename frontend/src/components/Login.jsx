@@ -1,8 +1,9 @@
 // src/components/Login.jsx
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext'; // ✅ ADD THIS IMPORT
 import logo from "../assets/logo.png";
-import axios from "axios"; // Use axios directly
+import axios from "axios";
 
 const Login = () => {
   const [formData, setFormData] = useState({
@@ -14,6 +15,7 @@ const Login = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const navigate = useNavigate();
+  const { login } = useAuth(); // ✅ ADD THIS LINE
 
   const handleChange = (e) => {
     setFormData({
@@ -28,21 +30,23 @@ const Login = () => {
     setLoading(true);
 
     try {
-      // 🔹 Use VITE_API_URL from .env + withCredentials
       const response = await axios.post(
         `${import.meta.env.VITE_API_URL}/auth/login`,
         formData,
         { withCredentials: true }
       );
 
-      // 🔹 If success, store token and user info
-      localStorage.setItem("token", response.data.token);
-      localStorage.setItem("user", JSON.stringify(response.data.user));
+      // ✅ REPLACE THESE LINES:
+      // localStorage.setItem("token", response.data.token);
+      // localStorage.setItem("user", JSON.stringify(response.data.user));
+      
+      // ✅ WITH THIS:
+      login(response.data.token, response.data.user);
 
       console.log("✅ Login successful:", response.data);
 
-      // 🔹 Redirect to dashboard
-      navigate("/dashboard");
+      // 🔹 Redirect to profile instead of dashboard
+      navigate("/profile");
     } catch (err) {
       console.error("❌ Login failed:", err.response?.data || err.message);
       setError(err.response?.data?.message || "Invalid email or password");

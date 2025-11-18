@@ -8,8 +8,9 @@ const Navbar = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [showCreateCommunity, setShowCreateCommunity] = useState(false);
   const [isMyCommunityOpen, setIsMyCommunityOpen] = useState(false);
-  const [createdCommunities, setCreatedCommunities] = useState([]); // ✅ Only created communities
+  const [createdCommunities, setCreatedCommunities] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [userData, setUserData] = useState(null);
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -37,12 +38,34 @@ const Navbar = () => {
     setIsMobileMenuOpen(false);
   };
 
-  // ✅ Added: Toggle MY COMMUNITY dropdown
+  // Handle profile button click
+  const handleProfileClick = () => {
+    navigate('/profile');
+  };
+
+  // Toggle MY COMMUNITY dropdown
   const toggleMyCommunity = () => {
     setIsMyCommunityOpen(!isMyCommunityOpen);
   };
 
-  // ✅ Added: Fetch only created communities
+  // Fetch user data
+  useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        const userData = localStorage.getItem('user');
+        if (userData) {
+          const user = JSON.parse(userData);
+          setUserData(user);
+        }
+      } catch (error) {
+        console.error('Error fetching user data:', error);
+      }
+    };
+
+    fetchUserData();
+  }, []);
+
+  // Fetch created communities
   useEffect(() => {
     const fetchCreatedCommunities = async () => {
       try {
@@ -62,7 +85,7 @@ const Navbar = () => {
           .map(community => ({
             id: community._id,
             name: community.name,
-            icon: '👥' // Default icon, you can customize based on community type
+            icon: '👥'
           }));
         
         setCreatedCommunities(userCreatedCommunities);
@@ -144,7 +167,11 @@ const Navbar = () => {
           <button className="w-10 h-10 bg-white rounded-full flex items-center justify-center hover:bg-[#FAF9FF] transition-colors border border-[#533DDE] shadow-sm">
             <span className="text-[#533DDE] text-lg">➕</span>
           </button>
-          <button className="w-10 h-10 bg-white rounded-full flex items-center justify-center hover:bg-[#FAF9FF] transition-colors border border-[#533DDE] shadow-sm">
+          {/* Profile Button */}
+          <button 
+            onClick={handleProfileClick}
+            className="w-10 h-10 bg-white rounded-full flex items-center justify-center hover:bg-[#FAF9FF] transition-colors border border-[#533DDE] shadow-sm"
+          >
             <span className="text-[#533DDE] text-lg">👤</span>
           </button>
         </div>
@@ -188,7 +215,7 @@ const Navbar = () => {
               <span className="text-base">NEW COMMUNITY</span>
             </button>
 
-            {/* ✅ Updated: MY COMMUNITY Dropdown Button (Only Created Communities) */}
+            {/* MY COMMUNITY Dropdown Button */}
             <button
               onClick={toggleMyCommunity}
               className="w-full mb-6 bg-[#F8F9FF] text-[#533DDE] py-3 px-4 rounded-xl font-semibold hover:bg-[#ECE9FB] transition-colors flex items-center justify-between"
@@ -202,7 +229,7 @@ const Navbar = () => {
               </span>
             </button>
 
-            {/* ✅ Updated: MY COMMUNITY Dropdown Content (Only Created Communities) */}
+            {/* MY COMMUNITY Dropdown Content */}
             {isMyCommunityOpen && (
               <div className="mb-6 bg-[#FAF9FF] rounded-xl p-3 border border-[#ECE9FB]">
                 <div className="space-y-2">
@@ -226,7 +253,7 @@ const Navbar = () => {
               </div>
             )}
 
-            {/* ✅ Updated: RECENT COMMUNITY (Empty for now) */}
+            {/* RECENT COMMUNITY */}
             <div>
               <h4 className="text-xs font-semibold text-[#999999] mb-3 uppercase tracking-wide">
                 RECENT COMMUNITY
@@ -240,8 +267,18 @@ const Navbar = () => {
             </div>
           </div>
 
-          {/* Logout */}
-          <div className="pt-4 border-t border-gray-200">
+          {/* Profile and Logout */}
+          <div className="pt-4 border-t border-gray-200 space-y-2">
+            {/* Profile Button in Sidebar */}
+            <button
+              onClick={handleProfileClick}
+              className="w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-left text-[#533DDE] bg-transparent hover:!bg-[#ECE9FB] hover:!text-[#533DDE] transition-colors duration-200"
+            >
+              <span className="text-xl">👤</span>
+              <span className="text-base font-medium">My Profile</span>
+            </button>
+            
+            {/* Logout Button */}
             <button
               onClick={handleLogout}
               className="w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-left text-[#533DDE] bg-transparent hover:!bg-[#ECE9FB] hover:!text-[#533DDE] transition-colors duration-200"
@@ -303,7 +340,7 @@ const Navbar = () => {
                   <span className="text-base">NEW COMMUNITY</span>
                 </button>
 
-                {/* ✅ Updated: MY COMMUNITY Dropdown Button for Mobile (Only Created Communities) */}
+                {/* MY COMMUNITY Dropdown Button for Mobile */}
                 <button
                   onClick={toggleMyCommunity}
                   className="w-full mb-6 bg-[#F8F9FF] text-[#533DDE] py-3 px-4 rounded-xl font-semibold hover:bg-[#ECE9FB] transition-colors flex items-center justify-between"
@@ -317,7 +354,7 @@ const Navbar = () => {
                   </span>
                 </button>
 
-                {/* ✅ Updated: MY COMMUNITY Dropdown Content for Mobile (Only Created Communities) */}
+                {/* MY COMMUNITY Dropdown Content for Mobile */}
                 {isMyCommunityOpen && (
                   <div className="mb-6 bg-[#FAF9FF] rounded-xl p-3 border border-[#ECE9FB]">
                     <div className="space-y-2">
@@ -344,7 +381,7 @@ const Navbar = () => {
                   </div>
                 )}
 
-                {/* ✅ Updated: RECENT COMMUNITY for Mobile (Empty for now) */}
+                {/* RECENT COMMUNITY for Mobile */}
                 <div>
                   <h4 className="text-xs font-semibold text-[#999999] mb-3 uppercase tracking-wide">
                     RECENT COMMUNITY
@@ -358,8 +395,21 @@ const Navbar = () => {
                 </div>
               </div>
 
-              {/* Logout */}
-              <div className="pt-4 border-t border-gray-200">
+              {/* Profile and Logout for Mobile */}
+              <div className="pt-4 border-t border-gray-200 space-y-2">
+                {/* Profile Button in Mobile Sidebar */}
+                <button
+                  onClick={() => {
+                    handleProfileClick();
+                    setIsMobileMenuOpen(false);
+                  }}
+                  className="w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-left text-[#533DDE] bg-transparent hover:!bg-[#ECE9FB] hover:!text-[#533DDE] transition-colors duration-200"
+                >
+                  <span className="text-xl">👤</span>
+                  <span className="text-base font-medium">My Profile</span>
+                </button>
+                
+                {/* Logout Button for Mobile */}
                 <button
                   onClick={handleLogout}
                   className="w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-left text-[#533DDE] bg-transparent hover:!bg-[#ECE9FB] hover:!text-[#533DDE] transition-colors duration-200"

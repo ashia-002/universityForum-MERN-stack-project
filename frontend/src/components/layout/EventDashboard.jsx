@@ -15,7 +15,12 @@ const EventDashboard = () => {
   const [selectedDept, setSelectedDept] = useState("");
   const [loading, setLoading] = useState(true);
   const [selectedDate, setSelectedDate] = useState("");
-  const [currentMonth, setCurrentMonth] = useState(new Date()); // ✅ Added: Current month state
+  const [currentMonth, setCurrentMonth] = useState(new Date());
+  const [deleteModal, setDeleteModal] = useState({
+    isOpen: false,
+    eventId: null,
+    eventTitle: ""
+  });
 
   useEffect(() => {
     const fetchData = async () => {
@@ -27,6 +32,7 @@ const EventDashboard = () => {
         ]);
         
         console.log("Events API Response:", eventsRes.data);
+        console.log("Departments API Response:", deptRes.data);
         
         setEvents(eventsRes.data.events || eventsRes.data || []);
         setDepartments(deptRes.data || []);
@@ -41,8 +47,36 @@ const EventDashboard = () => {
   }, []);
 
   const getDepartmentName = (id) => {
+    if (!id) return "Unknown Department";
+    
     const dept = departments.find((d) => d._id === id);
     return dept ? dept.name : "Unknown Department";
+  };
+
+  // Handle event deletion
+  const handleDeleteEvent = (deletedEventId) => {
+    setEvents(prevEvents => prevEvents.filter(event => event._id !== deletedEventId));
+    setDeleteModal({ isOpen: false, eventId: null, eventTitle: "" });
+  };
+
+  // Open delete confirmation modal
+  const openDeleteModal = (eventId, eventTitle) => {
+    setDeleteModal({
+      isOpen: true,
+      eventId,
+      eventTitle
+    });
+  };
+
+  // Close delete confirmation modal
+  const closeDeleteModal = () => {
+    setDeleteModal({ isOpen: false, eventId: null, eventTitle: "" });
+  };
+
+  // Handle event editing (placeholder for now)
+  const handleEditEvent = (eventId) => {
+    console.log("Edit event:", eventId);
+    // TODO: Implement edit modal or functionality
   };
 
   // ✅ Added: Dynamic calendar functions
@@ -110,11 +144,18 @@ const EventDashboard = () => {
     );
   };
 
-  // Filter & sort events
+  // Filter & sort events - UPDATED with better department filtering
   const filteredEvents = events
     .filter((event) => {
-      // Department filter
-      const departmentMatch = selectedDept ? event.department_id === selectedDept : true;
+      // Department filter - handle different possible field names
+      let departmentMatch = true;
+      if (selectedDept) {
+        // Check multiple possible field names for department ID
+        const eventDeptId = event.department_id || event.department || event.departmentId;
+        departmentMatch = eventDeptId === selectedDept;
+        
+        console.log(`Event: ${event.title}, Dept ID: ${eventDeptId}, Selected: ${selectedDept}, Match: ${departmentMatch}`);
+      }
       
       // Date filter
       let dateMatch = true;
@@ -142,9 +183,10 @@ const EventDashboard = () => {
       return 0;
     });
 
-  // Clear date filter
-  const clearDateFilter = () => {
+  // Clear all filters
+  const clearAllFilters = () => {
     setSelectedDate("");
+    setSelectedDept("");
   };
 
   if (loading) {
@@ -183,7 +225,7 @@ const EventDashboard = () => {
             </button>
           </div>
 
-          {/* Filter & Sort - RESPONSIVE BUTTONS */}
+          {/* Filter & Sort */}
           <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 items-start sm:items-center">
             {/* Department Dropdown */}
             <div className="relative w-full sm:w-44">
@@ -210,7 +252,7 @@ const EventDashboard = () => {
               </svg>
             </div>
 
-            {/* Responsive Sort Buttons */}
+            {/* Sort Buttons */}
             <div className="flex flex-wrap gap-2 sm:gap-3 w-full sm:w-auto">
               <button
                 onClick={() => setActiveButton("Upcoming")}
@@ -247,20 +289,35 @@ const EventDashboard = () => {
             </div>
           </div>
 
-          {/* Date Filter Info */}
-          {selectedDate && (
-            <div className="flex items-center gap-2 bg-[#F8F9FF] rounded-xl p-3">
-              <span className="text-sm text-[#533DDE]">
-                Showing events for: {dayjs(selectedDate).format('MMMM D, YYYY')}
-              </span>
+          {/* Active Filters Info */}
+          {(selectedDate || selectedDept) && (
+            <div className="flex items-center justify-between bg-[#F8F9FF] rounded-xl p-3">
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="text-sm text-[#533DDE] font-medium">Active filters:</span>
+                {selectedDept && (
+                  <span className="text-sm text-[#533DDE] bg-[#ECE9FB] px-2 py-1 rounded">
+                    Department: {departments.find(d => d._id === selectedDept)?.name}
+                  </span>
+                )}
+                {selectedDate && (
+                  <span className="text-sm text-[#533DDE] bg-[#ECE9FB] px-2 py-1 rounded">
+                    Date: {dayjs(selectedDate).format('MMM D, YYYY')}
+                  </span>
+                )}
+              </div>
               <button
-                onClick={clearDateFilter}
-                className="text-[#666] hover:text-[#333] text-sm"
+                onClick={clearAllFilters}
+                className="text-[#666] hover:text-[#333] text-sm font-medium"
               >
-                ✕
+                Clear All
               </button>
             </div>
           )}
+
+          {/* Events Count */}
+          <div className="text-sm text-[#666666]">
+            Showing {filteredEvents.length} of {events.length} events
+          </div>
 
           {/* Render Events */}
           <div className="flex flex-col gap-4">
@@ -279,13 +336,15 @@ const EventDashboard = () => {
                   tags={[
                     "Event",
                     event.scope,
-                    getDepartmentName(event.department_id),
+                    getDepartmentName(event.department_id || event.department || event.departmentId),
                   ]}
                   initialComments={event.comments || []}
                   attendees={event.attendees || []}
                   image={event.image}
                   likes={event.likes || []}
                   interestedUsers={event.interestedUsers || event.attendees || []}
+                  onDelete={() => openDeleteModal(event._id, event.title)}
+                  onEdit={handleEditEvent}
                 />
               ))
             ) : (
@@ -297,10 +356,7 @@ const EventDashboard = () => {
                 </p>
                 {(selectedDate || selectedDept) && (
                   <button
-                    onClick={() => {
-                      setSelectedDate("");
-                      setSelectedDept("");
-                    }}
+                    onClick={clearAllFilters}
                     className="mt-3 px-4 py-2 bg-[#533DDE] text-white rounded-xl hover:bg-[#311EAE] transition-colors"
                   >
                     Clear Filters
@@ -311,110 +367,106 @@ const EventDashboard = () => {
           </div>
         </div>
 
-        {/* Event Navigation Sidebar */}
+        {/* Calendar Sidebar - Updated with exact navigation system from image */}
         <div className="hidden lg:block w-80 flex-shrink-0">
-          <div className="space-y-6">
-            {/* BROWSE BY Section - NOW WITH DYNAMIC CALENDAR */}
-            <div className="bg-white rounded-2xl p-6 shadow-[0px_4px_20px_rgba(100,81,225,0.15)]">
-              <h2 className="text-xl font-bold text-[#333333] mb-2">BROWSE BY</h2>
+          <div className="bg-white rounded-2xl p-6 shadow-[0px_4px_20px_rgba(100,81,225,0.15)]">
+            
+            {/* BROWSE BY Section */}
+            <div className="mb-8">
+              <h2 className="text-[#533DDE] font-semibold text-lg mb-4">BROWSE BY</h2>
               
               {/* Month Navigation */}
-              <div className="flex justify-between items-center mb-4">
+              <div className="flex items-center justify-between mb-4">
                 <button 
                   onClick={goToPreviousMonth}
-                  className="p-2 hover:bg-[#F8F9FF] rounded-lg transition-colors"
+                  className="text-[#533DDE] hover:text-[#311EAE] transition-colors"
                 >
-                  <svg className="w-4 h-4 text-[#533DDE]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
                   </svg>
                 </button>
-                <h3 className="text-lg font-semibold text-[#533DDE]">
+                <h3 className="text-[#333333] font-semibold">
                   {monthNames[currentMonth.getMonth()]} {currentMonth.getFullYear()}
                 </h3>
                 <button 
                   onClick={goToNextMonth}
-                  className="p-2 hover:bg-[#F8F9FF] rounded-lg transition-colors"
+                  className="text-[#533DDE] hover:text-[#311EAE] transition-colors"
                 >
-                  <svg className="w-4 h-4 text-[#533DDE]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                   </svg>
                 </button>
               </div>
-              
+
               {/* Calendar Grid */}
-              <div className="mb-6">
+              <div className="mb-4">
+                {/* Week Days Header */}
                 <div className="grid grid-cols-7 gap-1 mb-2">
-                  {['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'].map((day) => (
-                    <div key={day} className="text-center text-xs font-medium text-[#666666] py-1">
+                  {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((day) => (
+                    <div key={day} className="text-center text-xs text-[#666666] font-medium py-1">
                       {day}
                     </div>
                   ))}
                 </div>
+
+                {/* Calendar Days */}
                 <div className="grid grid-cols-7 gap-1">
                   {calendarDays.map((day, index) => (
-                    <div
+                    <button
                       key={index}
                       onClick={() => handleDateSelect(day)}
-                      className={`w-8 h-8 rounded-lg flex items-center justify-center text-sm font-medium cursor-pointer transition-colors ${
-                        !day 
-                          ? "invisible"
-                          : isSelectedDate(day)
-                          ? "bg-[#533DDE] text-white"
-                          : isToday(day)
-                          ? "bg-[#ECE9FB] text-[#533DDE] border border-[#533DDE]"
-                          : "bg-[#F8F9FF] text-[#333333] hover:bg-[#ECE9FB]"
+                      className={`h-8 rounded-lg text-sm font-medium transition-all ${
+                        day
+                          ? isToday(day)
+                            ? 'bg-[#533DDE] text-white'
+                            : isSelectedDate(day)
+                            ? 'bg-[#ECE9FB] text-[#533DDE] border border-[#533DDE]'
+                            : 'text-[#333333] hover:bg-[#F8F9FF]'
+                          : ''
                       }`}
+                      disabled={!day}
                     >
-                      {day}
-                    </div>
+                      {day || ''}
+                    </button>
                   ))}
                 </div>
               </div>
 
-              {/* Date Input for Custom Date Selection */}
-              <div className="mb-4">
-                <label className="block text-sm font-medium text-[#666666] mb-2">
-                  Or select specific date:
-                </label>
-                <input
-                  type="date"
-                  value={selectedDate ? dayjs(selectedDate).format('YYYY-MM-DD') : ''}
-                  onChange={(e) => setSelectedDate(e.target.value ? new Date(e.target.value).toISOString() : '')}
-                  className="w-full h-10 bg-[#F8F9FF] border border-[#E3E0F9] rounded-xl px-3 outline-none focus:ring-2 focus:ring-[#533DDE] text-[#333]"
-                />
-              </div>
-
-              {selectedDate && (
-                <button
-                  onClick={clearDateFilter}
-                  className="w-full py-2 bg-[#ECE9FB] text-[#533DDE] rounded-xl font-medium hover:bg-[#E0DCF9] transition-colors"
-                >
-                  Clear Date Filter
-                </button>
-              )}
-
-              <div className="border-t border-[#ECE9FB] my-4"></div>
-
-              {/* INTERESTED IN Section - TEMPORARILY DISABLED */}
-              <h3 className="text-lg font-semibold text-[#333333] mb-4">INTERESTED IN</h3>
-              <div className="space-y-3">
-                <div className="text-center py-4">
-                  <p className="text-sm text-[#666666]">No events marked as interested yet</p>
-                  <p className="text-xs text-[#999] mt-1">Click "Interested" on events to see them here</p>
-                </div>
-              </div>
+              <div className="w-full h-px bg-[#ECE9FB] my-6"></div>
             </div>
 
-            {/* Additional Event Card Preview */}
-            <div className="bg-white rounded-2xl p-6 shadow-[0px_4px_20px_rgba(100,81,225,0.15)]">
-              <div className="flex items-center gap-2 mb-3">
-                <span className="px-3 py-1 bg-[#F8F9FF] text-[#533DDE] rounded-full text-xs font-medium">
-                  Event
-                </span>
-                <span className="text-[#666666] text-sm">(Department)</span>
+            {/* INTERESTED IN Section */}
+            <div>
+              <h2 className="text-[#533DDE] font-semibold text-lg mb-4">INTERESTED IN</h2>
+              
+              <div className="space-y-4">
+                {/* Event Item 1 */}
+                <div className="flex items-center gap-3 p-3 rounded-xl hover:bg-[#F8F9FF] transition-colors cursor-pointer">
+                  <div className="flex flex-col items-center justify-center w-12 h-12 bg-[#533DDE] text-white rounded-lg flex-shrink-0">
+                    <span className="text-xs font-bold">20</span>
+                    <span className="text-xs">AUG</span>
+                  </div>
+                  <span className="text-[#333333] font-medium text-sm">Freshers Orientation...</span>
+                </div>
+
+                {/* Event Item 2 */}
+                <div className="flex items-center gap-3 p-3 rounded-xl hover:bg-[#F8F9FF] transition-colors cursor-pointer">
+                  <div className="flex flex-col items-center justify-center w-12 h-12 bg-[#533DDE] text-white rounded-lg flex-shrink-0">
+                    <span className="text-xs font-bold">03</span>
+                    <span className="text-xs">SEP</span>
+                  </div>
+                  <span className="text-[#333333] font-medium text-sm">Programming C...</span>
+                </div>
+
+                {/* Event Item 3 */}
+                <div className="flex items-center gap-3 p-3 rounded-xl hover:bg-[#F8F9FF] transition-colors cursor-pointer">
+                  <div className="flex flex-col items-center justify-center w-12 h-12 bg-[#533DDE] text-white rounded-lg flex-shrink-0">
+                    <span className="text-xs font-bold">23</span>
+                    <span className="text-xs">SEP</span>
+                  </div>
+                  <span className="text-[#333333] font-medium text-sm">Seminar on Artifi...</span>
+                </div>
               </div>
-              <h3 className="font-semibold text-[#333333] mb-2">Join to welcome our Coding Champions</h3>
-              <p className="text-sm text-[#666666]">CSE</p>
             </div>
           </div>
         </div>
@@ -428,6 +480,41 @@ const EventDashboard = () => {
               onClose={() => setShowCreateEvent(false)}
               onAddEvent={(newEvent) => setEvents([newEvent, ...events])}
             />
+          </div>
+        </div>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {deleteModal.isOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl w-full max-w-md mx-auto p-6">
+            <div className="text-center">
+              <h2 className="text-xl font-semibold text-[#333333] mb-2">
+                Are you sure you want to delete this event?
+              </h2>
+              <p className="text-[#666666] mb-6">
+                {deleteModal.eventTitle && (
+                  <span className="font-medium">"{deleteModal.eventTitle}"</span>
+                )}
+                <br />
+                Event will be permanently removed.
+              </p>
+              
+              <div className="flex gap-4 justify-center">
+                <button
+                  onClick={closeDeleteModal}
+                  className="px-6 py-3 bg-[#F8F9FF] text-[#533DDE] rounded-xl font-medium hover:bg-[#ECE9FB] transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={() => handleDeleteEvent(deleteModal.eventId)}
+                  className="px-6 py-3 bg-[#533DDE] text-white rounded-xl font-medium hover:bg-[#311EAE] transition-colors"
+                >
+                  Delete
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       )}

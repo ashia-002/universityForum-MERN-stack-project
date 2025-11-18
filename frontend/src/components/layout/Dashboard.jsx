@@ -1,7 +1,7 @@
 // src/components/layout/Dashboard.jsx
 import React, { useState, useEffect } from "react";
 import CreatePost from "./CreatePost";
-import Postcard from "./PostCard";
+import Postcard from "./Postcard";
 import api from "../../services/api";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
@@ -13,6 +13,11 @@ const Dashboard = () => {
   const [posts, setPosts] = useState([]);
   const [departments, setDepartments] = useState([]);
   const [selectedDept, setSelectedDept] = useState("");
+  const [deleteModal, setDeleteModal] = useState({
+    isOpen: false,
+    postId: null,
+    postTitle: ""
+  });
 
   useEffect(() => {
     const fetchData = async () => {
@@ -33,6 +38,33 @@ const Dashboard = () => {
   const getDepartmentName = (id) => {
     const dept = departments.find((d) => d._id === id);
     return dept ? dept.name : "Unknown Department";
+  };
+
+  // Handle post deletion
+  const handleDeletePost = (deletedPostId) => {
+    setPosts(prevPosts => prevPosts.filter(post => post._id !== deletedPostId));
+    setDeleteModal({ isOpen: false, postId: null, postTitle: "" });
+  };
+
+  // Open delete confirmation modal
+  const openDeleteModal = (postId, postTitle) => {
+    setDeleteModal({
+      isOpen: true,
+      postId,
+      postTitle
+    });
+  };
+
+  // Close delete confirmation modal
+  const closeDeleteModal = () => {
+    setDeleteModal({ isOpen: false, postId: null, postTitle: "" });
+  };
+
+  // Handle post editing (placeholder for now)
+  const handleEditPost = (postId) => {
+    console.log("Edit post:", postId);
+    // TODO: Implement edit modal or functionality
+   
   };
 
   // Filter & sort posts
@@ -136,6 +168,8 @@ const Dashboard = () => {
                   getDepartmentName(post.department_id),
                 ]}
                 initialComments={post.comments}
+                onDelete={() => openDeleteModal(post._id, post.title)} // ✅ Updated to open confirmation modal
+                onEdit={handleEditPost} // ✅ Added edit handler
               />
             ))}
           </div>
@@ -152,6 +186,41 @@ const Dashboard = () => {
               onClose={() => setShowCreatePost(false)}
               onAddPost={(newPost) => setPosts([newPost, ...posts])}
             />
+          </div>
+        </div>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {deleteModal.isOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl w-full max-w-md mx-auto p-6">
+            <div className="text-center">
+              <h2 className="text-xl font-semibold text-[#333333] mb-2">
+                Are you sure you want to delete this post?
+              </h2>
+              <p className="text-[#666666] mb-6">
+                {deleteModal.postTitle && (
+                  <span className="font-medium">"{deleteModal.postTitle}"</span>
+                )}
+                <br />
+                Member posts will remain.
+              </p>
+              
+              <div className="flex gap-4 justify-center">
+                <button
+                  onClick={closeDeleteModal}
+                  className="px-6 py-3 bg-[#F8F9FF] text-[#533DDE] rounded-xl font-medium hover:bg-[#ECE9FB] transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={() => handleDeletePost(deleteModal.postId)}
+                  className="px-6 py-3 bg-[#533DDE] text-white rounded-xl font-medium hover:bg-[#311EAE] transition-colors"
+                >
+                  Delete
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       )}

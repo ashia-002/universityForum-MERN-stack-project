@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import api from "../../services/api.js";
 
 const CreatePost = ({ onClose, onAddPost }) => {
@@ -9,15 +9,97 @@ const CreatePost = ({ onClose, onAddPost }) => {
     community_id: "",
     image: "",
   });
-  const [imageFile, setImageFile] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [userCommunities, setUserCommunities] = useState([]);
+  const [departments, setDepartments] = useState([]);
+  const [loadingCommunities, setLoadingCommunities] = useState(false);
+  const [loadingDepartments, setLoadingDepartments] = useState(false);
+  const [currentUserId, setCurrentUserId] = useState(null);
+
+  // Fetch current user ID, communities, and departments when component mounts
+  useEffect(() => {
+    const fetchUserDataAndCommunities = async () => {
+      try {
+        setLoadingCommunities(true);
+        setLoadingDepartments(true);
+        console.log("Fetching user data and communities...");
+
+        // First, get current user info to know their ID
+        let userId = null;
+        try {
+          const userResponse = await api.get("/user/profile");
+          console.log("User profile response:", userResponse.data);
+          userId = userResponse.data.user?._id || userResponse.data._id;
+          setCurrentUserId(userId);
+          console.log("Current user ID:", userId);
+        } catch (userError) {
+          console.log("Failed to get user profile:", userError.response?.data || userError.message);
+        }
+
+        // Fetch departments
+        console.log("Fetching departments from /get/department");
+        try {
+          const deptResponse = await api.get("/get/department");
+          console.log("Departments response:", deptResponse.data);
+          setDepartments(deptResponse.data || []);
+        } catch (deptError) {
+          console.error("Error fetching departments:", deptError);
+          console.error("Department error response:", deptError.response?.data);
+        } finally {
+          setLoadingDepartments(false);
+        }
+
+        // Now fetch all communities
+        console.log("Fetching all communities from /community/view-all");
+        const communitiesResponse = await api.get("/community/view-all");
+        console.log("All communities response:", communitiesResponse.data);
+
+        let allCommunities = [];
+        
+        // Handle different response structures
+        if (Array.isArray(communitiesResponse.data)) {
+          allCommunities = communitiesResponse.data;
+        } else if (communitiesResponse.data.communities && Array.isArray(communitiesResponse.data.communities)) {
+          allCommunities = communitiesResponse.data.communities;
+        } else if (communitiesResponse.data.data && Array.isArray(communitiesResponse.data.data)) {
+          allCommunities = communitiesResponse.data.data;
+        }
+
+        console.log("Total communities found:", allCommunities.length);
+        console.log("All communities:", allCommunities);
+
+        // Filter communities created by current user
+        let userCreatedCommunities = [];
+        if (userId && allCommunities.length > 0) {
+          userCreatedCommunities = allCommunities.filter(community => {
+            const createdById = community.created_by?._id || community.created_by;
+            const isCreatedByUser = createdById === userId;
+            
+            if (isCreatedByUser) {
+              console.log(`Community "${community.name}" created by user`);
+            }
+            
+            return isCreatedByUser;
+          });
+        }
+
+        console.log("User created communities:", userCreatedCommunities);
+        setUserCommunities(userCreatedCommunities);
+
+      } catch (error) {
+        console.error("Error fetching communities:", error);
+        console.error("Error response:", error.response?.data);
+        setUserCommunities([]);
+      } finally {
+        setLoadingCommunities(false);
+      }
+    };
+
+    fetchUserDataAndCommunities();
+  }, []);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
-
-  const handleImageChange = (e) => {
-    setImageFile(e.target.files[0]);
   };
 
   const handleSubmit = async (e) => {
@@ -29,18 +111,6 @@ const CreatePost = ({ onClose, onAddPost }) => {
 
     try {
       setLoading(true);
-      let imageUrl = formData.image;
-
-      if (imageFile) {
-        const imgData = new FormData();
-        imgData.append("file", imageFile);
-
-        const imgRes = await api.post("/upload", imgData, {
-          headers: { "Content-Type": "multipart/form-data" },
-        });
-
-        imageUrl = imgRes.data.url;
-      }
 
       const payload = {
         title: formData.title,
@@ -48,7 +118,7 @@ const CreatePost = ({ onClose, onAddPost }) => {
         scope: "university",
         community_id: formData.community_id || null,
         department_id: formData.department_id,
-        image: imageUrl || "",
+        image: formData.image || "", // Use the URL directly from form data
       };
 
       const response = await api.post("/post/create", payload);
@@ -117,11 +187,20 @@ const CreatePost = ({ onClose, onAddPost }) => {
             onChange={handleChange}
             className="w-36 h-14 bg-[#F8F9FF] border border-[#E3E0F9] rounded-xl px-4 outline-none focus:ring-2 focus:ring-[#533DDE] text-[#533DDE] font-medium"
             required
+            disabled={loadingDepartments}
           >
             <option value="">Department</option>
-            <option value="68e68902fe6bae63caea28c7">CSE</option>
-            <option value="68e68902fe6bae63caea28c8">BBA</option>
-            <option value="68e68902fe6bae63caea28c9">EEE</option>
+            {loadingDepartments ? (
+              <option value="" disabled>Loading departments...</option>
+            ) : departments.length > 0 ? (
+              departments.map((dept) => (
+                <option key={dept._id} value={dept._id}>
+                  {dept.name}
+                </option>
+              ))
+            ) : (
+              <option value="" disabled>No departments available</option>
+            )}
           </select>
 
           <select
@@ -129,24 +208,60 @@ const CreatePost = ({ onClose, onAddPost }) => {
             value={formData.community_id}
             onChange={handleChange}
             className="w-36 h-14 bg-[#F8F9FF] border border-[#E3E0F9] rounded-xl px-4 outline-none focus:ring-2 focus:ring-[#533DDE] text-[#533DDE] font-medium"
+            disabled={loadingCommunities}
           >
             <option value="">Community</option>
-            <option value="68e689f2fe6bae63caea2901">General Discussion</option>
-            <option value="68e689f2fe6bae63caea2902">Academic Help</option>
-            <option value="68e689f2fe6bae63caea2903">Campus Events</option>
-            <option value="68e689f2fe6bae63caea2904">Student Projects</option>
+            {loadingCommunities ? (
+              <option value="" disabled>Loading your communities...</option>
+            ) : userCommunities.length > 0 ? (
+              userCommunities.map((community) => (
+                <option key={community._id} value={community._id}>
+                  {community.name}
+                </option>
+              ))
+            ) : (
+              <option value="" disabled>No communities created</option>
+            )}
           </select>
         </div>
 
+        {userCommunities.length > 0 && (
+          <div className="text-sm text-[#533DDE]">
+            Showing {userCommunities.length} of your communities
+          </div>
+        )}
+
         <div>
-          <label className="block text-base font-medium text-[#555] mb-2">Attach Image (optional)</label>
+          <label className="block text-base font-medium text-[#555] mb-2">Image URL (optional)</label>
           <input
-            type="file"
-            accept="image/*"
-            onChange={handleImageChange}
-            className="w-full text-sm text-[#555]"
+            type="url"
+            name="image"
+            placeholder="https://example.com/image.jpg"
+            value={formData.image}
+            onChange={handleChange}
+            className="w-full h-14 bg-[#F8F9FF] border border-[#E3E0F9] rounded-xl px-4 outline-none focus:ring-2 focus:ring-[#533DDE] text-[#333]"
           />
+          <p className="text-sm text-gray-500 mt-1">
+            Enter a direct URL to your image (supports JPG, PNG, GIF, etc.)
+          </p>
         </div>
+
+        {/* Image Preview */}
+        {formData.image && (
+          <div className="mt-2">
+            <p className="text-sm font-medium text-[#555] mb-2">Image Preview:</p>
+            <div className="border border-[#E3E0F9] rounded-lg p-2 bg-[#F8F9FF]">
+              <img 
+                src={formData.image} 
+                alt="Preview" 
+                className="max-h-40 mx-auto rounded"
+                onError={(e) => {
+                  e.target.style.display = 'none';
+                }}
+              />
+            </div>
+          </div>
+        )}
 
         <div className="border-t border-[#ECE9FB] my-6"></div>
 

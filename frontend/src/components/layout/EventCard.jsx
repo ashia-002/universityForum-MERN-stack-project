@@ -17,7 +17,9 @@ const EventCard = ({
   attendees = [],
   image,
   likes = [],
-  interestedUsers = []
+  interestedUsers = [],
+  onDelete, // Callback when event is deleted - should open confirmation modal
+  onEdit // Callback when event is edited
 }) => {
   const [showComments, setShowComments] = useState(false);
   const [comments, setComments] = useState(initialComments);
@@ -30,6 +32,7 @@ const EventCard = ({
     like: false, 
     comment: false 
   });
+  const [showMenu, setShowMenu] = useState(false);
 
   const handleAddComment = async (e) => {
     e.preventDefault();
@@ -135,13 +138,88 @@ const EventCard = ({
     }
   };
 
+  // Updated: Remove the internal confirm and directly call onDelete
+  const handleDeleteEvent = () => {
+    // Simply call the onDelete callback - Dashboard will handle the confirmation
+    if (onDelete) {
+      onDelete(id);
+    }
+    setShowMenu(false);
+  };
+
+  const handleEditEvent = () => {
+    // Call the onEdit callback if provided
+    if (onEdit) {
+      onEdit(id);
+    }
+    setShowMenu(false);
+  };
+
+  const toggleMenu = () => {
+    setShowMenu(!showMenu);
+  };
+
+  // Close menu when clicking outside
+  React.useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (showMenu && !event.target.closest('.event-menu')) {
+        setShowMenu(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showMenu]);
+
   const formatEventDate = (dateString) => {
     if (!dateString) return "Date not specified";
     return dayjs(dateString).format("MMMM D, YYYY [at] h:mm A");
   };
 
   return (
-    <div className="bg-white rounded-2xl p-6 shadow-[0px_4px_20px_rgba(100,81,225,0.15)]">
+    <div className="bg-white rounded-2xl p-6 shadow-[0px_4px_20px_rgba(100,81,225,0.15)] relative">
+      {/* Three-dot menu button */}
+      <div className="absolute top-6 right-6 event-menu">
+        <button
+          onClick={toggleMenu}
+          className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 transition-colors"
+        >
+          <svg
+            className="w-5 h-5 text-gray-500"
+            fill="currentColor"
+            viewBox="0 0 20 20"
+          >
+            <path d="M6 10a2 2 0 11-4 0 2 2 0 014 0zM12 10a2 2 0 11-4 0 2 2 0 014 0zM16 12a2 2 0 100-4 2 2 0 000 4z" />
+          </svg>
+        </button>
+
+        {/* Dropdown menu */}
+        {showMenu && (
+          <div className="absolute right-0 top-10 bg-white rounded-lg shadow-lg border border-gray-200 py-2 w-40 z-10">
+            <button
+              onClick={handleEditEvent}
+              className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+              </svg>
+              Edit Event
+            </button>
+            <button
+              onClick={handleDeleteEvent}
+              className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 flex items-center gap-2"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+              </svg>
+              Delete Event
+            </button>
+          </div>
+        )}
+      </div>
+
       {/* Event Header */}
       <div className="flex justify-between items-start mb-4">
         <div className="flex items-center gap-2">
@@ -168,7 +246,7 @@ const EventCard = ({
       )}
 
       {/* Event Title */}
-      <h1 className="text-2xl font-bold text-[#333333] mb-2">
+      <h1 className="text-2xl font-bold text-[#333333] mb-2 pr-10">
         {title}
       </h1>
 
@@ -203,30 +281,29 @@ const EventCard = ({
 
       {/* Action Buttons and Comment Input */}
       <div className="flex items-center gap-3">
-        {/* Like Button */}
+        {/* Like Button - Updated to match PostCard */}
         <button
           onClick={handleLike}
           disabled={loading.like}
-          className={`flex items-center gap-2 px-4 py-2 rounded-xl font-medium transition-colors ${
-            isLiked
-              ? "bg-[#533DDE] text-white"
-              : "bg-[#F8F9FF] text-[#533DDE] hover:bg-[#ECE9FB]"
-          } disabled:opacity-50 disabled:cursor-not-allowed`}
+          className={`flex items-center gap-1 px-4 py-2 rounded-xl border border-[#ECE9FB] transition-colors ${
+            isLiked ? "bg-[#533DDE] text-white" : "bg-white text-[#533DDE]"
+          } hover:bg-[#7F6BE5] hover:text-white disabled:opacity-50 disabled:cursor-not-allowed`}
         >
-          <svg 
-            className="w-4 h-4" 
-            fill={isLiked ? "currentColor" : "none"} 
-            stroke="currentColor" 
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            className="w-5 h-5"
+            fill={isLiked ? "white" : "currentColor"}
             viewBox="0 0 24 24"
+            stroke="none"
           >
-            <path 
-              strokeLinecap="round" 
-              strokeLinejoin="round" 
-              strokeWidth={2} 
-              d="M14 10h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0115.263 21h-4.017c-.163 0-.326-.02-.485-.06L7 20m7-10V5a2 2 0 00-2-2h-.095c-.5 0-.905.405-.905.905 0 .714-.211 1.412-.608 2.006L7 11v9m7-10h-2M7 20H5a2 2 0 01-2-2v-6a2 2 0 012-2h2.5" 
-            />
+            <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 
+                     3 7.5 3c1.74 0 3.41 0.81 4.5 
+                     2.09C13.09 3.81 14.76 3 16.5 
+                     3 19.58 3 22 5.42 22 8.5c0 
+                     3.78-3.4 6.86-8.55 11.54L12 
+                     21.35z" />
           </svg>
-          Like
+          <span className="text-sm font-medium">{isLiked ? "Liked" : "Like"}</span>
         </button>
 
         {/* Interested Button */}

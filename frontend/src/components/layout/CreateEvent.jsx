@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import api from "../../services/api.js";
 
 const CreateEvent = ({ onClose, onAddEvent }) => {
@@ -17,6 +17,28 @@ const CreateEvent = ({ onClose, onAddEvent }) => {
   const [venueAdded, setVenueAdded] = useState(false);
   const [dateAdded, setDateAdded] = useState(false);
   const [timeAdded, setTimeAdded] = useState(false);
+  const [departments, setDepartments] = useState([]);
+  const [loadingDepartments, setLoadingDepartments] = useState(false);
+
+  // Fetch departments from API
+  useEffect(() => {
+    const fetchDepartments = async () => {
+      try {
+        setLoadingDepartments(true);
+        console.log("Fetching departments from /get/department");
+        const deptResponse = await api.get("/get/department");
+        console.log("Departments response:", deptResponse.data);
+        setDepartments(deptResponse.data || []);
+      } catch (error) {
+        console.error("Error fetching departments:", error);
+        console.error("Department error response:", error.response?.data);
+      } finally {
+        setLoadingDepartments(false);
+      }
+    };
+
+    fetchDepartments();
+  }, []);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -290,11 +312,20 @@ const CreateEvent = ({ onClose, onAddEvent }) => {
             onChange={handleChange}
             className="w-36 h-14 bg-[#F8F9FF] border border-[#E3E0F9] rounded-xl px-4 outline-none focus:ring-2 focus:ring-[#533DDE] text-[#533DDE] font-medium"
             required
+            disabled={loadingDepartments}
           >
             <option value="">Select Department</option>
-            <option value="68e68902fe6bae63caea28c7">CSE</option>
-            <option value="68e68902fe6bae63caea28c8">BBA</option>
-            <option value="68e68902fe6bae63caea28c9">EEE</option>
+            {loadingDepartments ? (
+              <option value="" disabled>Loading departments...</option>
+            ) : departments.length > 0 ? (
+              departments.map((dept) => (
+                <option key={dept._id} value={dept._id}>
+                  {dept.name}
+                </option>
+              ))
+            ) : (
+              <option value="" disabled>No departments available</option>
+            )}
           </select>
 
           <select
