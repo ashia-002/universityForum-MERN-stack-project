@@ -3,7 +3,7 @@ import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import api from "../../services/api";
 import CreatePost from "./CreatePost"; // Import the CreatePost component
-import PostCard from "./PostCard"; // Import the PostCard component
+import PostCard from "./Postcard"; // Import the PostCard component
 
 const ViewCommunity = () => {
   const { communityId } = useParams();
